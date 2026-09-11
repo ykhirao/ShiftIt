@@ -79,6 +79,7 @@
     xcodebuild -project ShiftItNeo.xcodeproj -scheme ShiftItNeo -configuration Release build
   ```
 
+- リリース：`project.yml` の `MARKETING_VERSION` を上げて `develop` → `main` にマージし、`main` に同じ番号のタグ（例：`v2.0.1`）を push する。CI がタグとアプリのバージョンの一致を確かめてから、`ShiftItNeo-<version>.zip` を GitHub Releases に公開する。リリースノートの冒頭（インストール手順）は `.github/release-notes.md`。ビルド番号（`CFBundleVersion`）は CI の実行番号になる。
 - ウィンドウを動かすには「アクセシビリティ」の許可が要るので、動作確認は CI ではできない。CI でできたアプリを実機に入れて確かめる。
 - アクセシビリティの許可はコード署名に紐づく。CI では GitHub Secrets の自己署名証明書（`SIGNING_CERT_P12`、`SIGNING_CERT_PASSWORD`）で署名し直すので、ビルドが変わっても許可は引き継がれる。証明書が登録されていない環境（フォークからの PR など）では仮の署名（ad-hoc）になり、入れ替えるたびに許可を付け直すことになる。
 - 証明書の秘密鍵は GitHub Secrets にしか置いていない（取り出せない）。作り直すと、利用者は一度だけ許可を付け直すことになる。
@@ -100,7 +101,7 @@
 - [x] **コンパイラの警告をなくす**（ShortcutRecorder 側の警告は除く）。
 - [x] **実機で動作を確かめる**：2026-09-12 に Apple Silicon の Mac（macOS 26.6）で、CI でビルドした ShiftItNeo が動くことを確認した。
 - [x] **古いファイルを掃除し、README をこのフォーク向けに書き直す**。
-- [ ] **配布を GitHub Releases にする**：今は Actions の成果物から取ってもらっている（保存期間は 90 日）。
+- [x] **配布を GitHub Releases にする**：`v*` のタグを push すると CI が Releases に公開する。
 
 ## コミットと PR
 

@@ -47,7 +47,7 @@
                                             </textFieldCell>
                                         </textField>
                                         <textField verticalHuggingPriority="750" id="584">
-                                            <rect key="frame" x="152" y="387" width="73" height="17"/>
+                                            <rect key="frame" x="118" y="387" width="141" height="17"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="version" id="585">
                                                 <font key="font" metaFont="system"/>

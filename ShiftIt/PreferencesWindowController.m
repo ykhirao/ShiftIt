@@ -62,7 +62,10 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 - (void)awakeFromNib {
     [tabView_ selectTabViewItemAtIndex:0];
 
-    NSString *versionString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSString *versionString = FMTStr(@"%@ (%@)",
+                                     [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"],
+                                     [bundle objectForInfoDictionaryKey:@"CFBundleVersion"]);
     [versionLabel_ setStringValue:versionString];
 
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];

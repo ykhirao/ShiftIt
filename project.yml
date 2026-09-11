@@ -50,6 +50,9 @@ targets:
     settings:
       base:
         PRODUCT_NAME: ShiftItNeo
+        # リリースのたびにここを上げ、同じ番号のタグ（v2.0.0 など）を push する。ビルド番号は CI の実行番号で上書きする
+        MARKETING_VERSION: "2.0.0"
+        CURRENT_PROJECT_VERSION: "1"
         PRODUCT_BUNDLE_IDENTIFIER: io.github.ykhirao.ShiftItNeo
         INFOPLIST_FILE: ShiftIt/ShiftIt-Info.plist
         GCC_PREFIX_HEADER: ShiftIt/ShiftIt_Prefix.pch
