@@ -38,6 +38,16 @@ jobs:
             -derivedDataPath build/DerivedData \
             build 2>&1 | tee build/xcodebuild.log
 
+      - name: テスト
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project ShiftItNeo.xcodeproj \
+            -scheme ShiftItNeo \
+            -destination 'platform=macOS,arch=arm64' \
+            -derivedDataPath build/DerivedData \
+            test 2>&1 | tee build/xcodebuild-test.log
+
       # 自己署名証明書で署名し直す。ビルドが変わっても同じ証明書で署名されていれば、
       # macOS はアクセシビリティの許可を引き継ぐ。証明書が登録されていなければ仮の署名（ad-hoc）のまま。
       - name: 自己署名証明書で署名する
@@ -83,4 +93,4 @@ jobs:
         if: always()
         with:
           name: xcodebuild-log
-          path: build/xcodebuild.log
+          path: build/xcodebuild*.log

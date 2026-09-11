@@ -16,7 +16,7 @@ SR_INCLUDE=$SR_DIR/Sources/ShortcutRecorder/include
 SDK=$(xcrun --show-sdk-path)
 
 fail=0
-for f in $(cd "$ROOT" && ls *.m FMT/*.m GTM/*.m | grep -v GHUnitTestMain); do
+for f in $(cd "$ROOT" && ls *.m FMT/*.m GTM/*.m); do
   arc=-fobjc-arc
   case $f in GTM/*) arc=-fno-objc-arc ;; esac
   out=$(clang -fsyntax-only $arc -fmodules -fobjc-exceptions -arch arm64 -isysroot "$SDK" -mmacosx-version-min=13.0 \

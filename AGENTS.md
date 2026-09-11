@@ -38,7 +38,8 @@
 | `ShiftIt/FMT/` | 汎用ユーティリティ（ホットキー登録、ログイン項目など） |
 | `ShiftIt/GTM/` | Google Toolbox for Mac の一部（ログ出力） |
 | `ShiftIt/Base.lproj/`, `ShiftIt/ja.lproj/` | 画面（xib）と文言。英語と日本語 |
-| `ShiftIt/ShiftIt Tests/`, `ShiftIt/FMT Tests/` | テスト（OCUnit。今の Xcode では動かない） |
+| `Tests/` | 単体テスト（XCTest）。ターゲットは `ShiftItNeoTests` |
+| `scripts/` | 開発用のスクリプト |
 
 依存ライブラリは [ShortcutRecorder](https://github.com/Kentzo/ShortcutRecorder) 3.4.0（ショートカットの記録欄）だけ。Swift Package Manager で入れていて、バージョンは `project.yml` の `packages` で指定している。
 
@@ -60,8 +61,9 @@
 ## ビルドと動作確認
 
 - 開発機に Xcode はない（Command Line Tools のみ）。**ビルドは GitHub Actions の macOS ランナーで行う。** 公開リポジトリなので無料。
-  - 設定は `.github/workflows/build.yml`。`main` / `develop` への push と PR で動く。できたアプリ（`ShiftItNeo.zip`）とビルドログは、実行結果の Artifacts からダウンロードできる。
+  - 設定は `.github/workflows/build.yml`。`main` / `develop` への push と PR で、ビルドと単体テストが動く。できたアプリ（`ShiftItNeo.zip`）とビルドログは、実行結果の Artifacts からダウンロードできる。
   - 結果の確認：`gh run list --branch develop`、`gh run view <ID> --log-failed`
+- 単体テスト（`Tests/`）は XCTest が要るので CI でしか動かせない。テストはアプリを起動しない形にしていて、テスト対象のソースを `project.yml` の `ShiftItNeoTests` に直接入れている。テストで使うソースを増やしたら、そこにも足す。
 - `scripts/check-syntax.sh` で、Xcode がなくても全ソースの構文チェック（コンパイルエラーと警告の確認）ができる。数秒で終わるので、push する前に必ず通す。
 - Xcode プロジェクトの生成は Xcode がなくてもできる（`project.yml` を直したら、生成して中身を確かめられる）：
 
@@ -93,7 +95,7 @@
 - [x] **廃止された API を置き換える**：
   - ガベージコレクション、ログイン項目（`LSSharedFileList` → `SMAppService`）、警告ダイアログ（`NSRunAlertPanel` → `NSAlert`）、「システム環境設定」の操作（ScriptingBridge → URL で「システム設定」を開く）
 - [x] **ARC に移す**。
-- [ ] **テストを XCTest に移す**：OCUnit（SenTestingKit）は今の Xcode から削除されている。`project.yml` にテストのターゲットを足す。
+- [x] **テストを XCTest に移す**。
 - [x] **署名**：自己署名証明書を GitHub Secrets に登録して CI で署名する。
 - [x] **コンパイラの警告をなくす**（ShortcutRecorder 側の警告は除く）。
 - [x] **実機で動作を確かめる**：2026-09-12 に Apple Silicon の Mac（macOS 26.6）で、CI でビルドした ShiftItNeo が動くことを確認した。

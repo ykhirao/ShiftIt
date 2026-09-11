@@ -29,13 +29,12 @@ targets:
   ShiftItNeo:
     type: application
     platform: macOS
-    scheme: {}
+    scheme:
+      testTargets:
+        - ShiftItNeoTests
     sources:
       - path: ShiftIt
         excludes:
-          - "ShiftIt Tests"
-          - "FMT Tests"
-          - "GHUnitTestMain.m"
           - "FMT/Readme.md"
           - "ShiftIt-Info.plist"
           - "GTM/GTMLogger.m"
@@ -57,6 +56,29 @@ targets:
         GCC_PRECOMPILE_PREFIX_HEADER: YES
         COMBINE_HIDPI_IMAGES: YES
         # 仮の署名（ad-hoc）。Apple Silicon では署名のないアプリは起動できない
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: ""
+
+  # 計算まわりの単体テスト。アプリを起動しない（アクセシビリティ許可のダイアログで止まらないように）ので、
+  # テスト対象のソースを直接テストバンドルに入れている
+  ShiftItNeoTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+      - path: ShiftIt/SIAdjacentRectangles.m
+        group: Tests/Sources
+      - path: ShiftIt/FMTGeometry.m
+        group: Tests/Sources
+      - path: ShiftIt/FMT/FMTNSArray+Functional.m
+        group: Tests/Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.ykhirao.ShiftItNeoTests
+        GENERATE_INFOPLIST_FILE: YES
+        HEADER_SEARCH_PATHS: ["$(inherited)", "$(PROJECT_DIR)/ShiftIt", "$(PROJECT_DIR)/ShiftIt/FMT", "$(PROJECT_DIR)/ShiftIt/GTM"]
+        GCC_PREFIX_HEADER: ShiftIt/ShiftIt_Prefix.pch
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: ""
