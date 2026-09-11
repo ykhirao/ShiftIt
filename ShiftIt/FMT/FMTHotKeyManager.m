@@ -106,9 +106,9 @@ static inline OSStatus hotKeyHandler(EventHandlerCallRef inHandlerCallRef,EventR
 	GetEventParameter(inEvent,kEventParamDirectObject,typeEventHotKeyID,NULL,
 					  sizeof(hotKeyID),NULL,&hotKeyID);
 	
-	NSNumber *id = [NSNumber numberWithInt:hotKeyID.id];
+	NSNumber *hotKeyNumber = [NSNumber numberWithInt:hotKeyID.id];
 	
-	TWHotKeyRegistartion* hotKeyReg = [allHotKeys objectForKey:id];
+	TWHotKeyRegistartion* hotKeyReg = [allHotKeys objectForKey:hotKeyNumber];
 	
 	if (hotKeyReg != nil) {
 		// objc_msgSend must be cast to the exact method type; arm64 does not pass arguments like a variadic call
