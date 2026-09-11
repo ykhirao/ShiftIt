@@ -62,6 +62,7 @@
 - 開発機に Xcode はない（Command Line Tools のみ）。**ビルドは GitHub Actions の macOS ランナーで行う。** 公開リポジトリなので無料。
   - 設定は `.github/workflows/build.yml`。`main` / `develop` への push と PR で動く。できたアプリ（`ShiftItNeo.zip`）とビルドログは、実行結果の Artifacts からダウンロードできる。
   - 結果の確認：`gh run list --branch develop`、`gh run view <ID> --log-failed`
+- `scripts/check-syntax.sh` で、Xcode がなくても全ソースの構文チェック（コンパイルエラーと警告の確認）ができる。数秒で終わるので、push する前に必ず通す。
 - Xcode プロジェクトの生成は Xcode がなくてもできる（`project.yml` を直したら、生成して中身を確かめられる）：
 
   ```sh
