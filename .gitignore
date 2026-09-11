@@ -1,6 +1,2 @@
-ShiftIt-*.zip
-misc
-fabfile.pyc
-._build
 ShiftIt.xcodeproj/
 build/
