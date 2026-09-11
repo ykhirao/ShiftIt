@@ -28,13 +28,9 @@ NSString *FMTGetMainBundleResourcePath(NSString *resourceName, NSString *resourc
 NSURL *FMTGetBundleResourceURL(NSBundle *bundle, NSString *resourceName, NSString *resourceType);
 NSURL *FMTGetMainBundleResourceURL(NSString *resourceName, NSString *resourceType);
 
-BOOL FMTOpenSystemPreferencePane(NSString *prefPaneId);
-
-BOOL FMTIsProcessWithBundleIdRunning(NSString *bundleId);
-
-NSInteger FMTNumberOfRunningProcessesWithBundleId(NSString *bundleId);
+// Whether the app is registered to open at login (SMAppService, macOS 13+)
+BOOL FMTIsLoginItemEnabled(void);
+BOOL FMTSetLoginItemEnabled(BOOL enabled, NSError **error);
 
 NSError* FMTCreateError(NSString *erroDomain, NSInteger errorCode, NSString *fmt, ...);
 NSError* FMTCreateErrorWithCause(NSString *errorDomain, NSInteger errorCode, NSError *cause, NSString *fmt, ...);
-
-NSDictionary *FMTEncodeForSparkle(NSString *key, NSString *value, NSString *displayKey, NSString *displayValue);

@@ -109,11 +109,12 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 }
 
 -(IBAction)reportIssue:(id)sender {
-    NSInteger ret = NSRunAlertPanel(NSLocalizedString(@"Before you report new issue", nil),
-            NSLocalizedString(@"Please make sure that you look at the other issues before you submit a new one.", nil),
-            NSLocalizedString(@"Take me to github.com", nil), NULL, NULL);
-    
-    if (ret == NSAlertDefaultReturn) {
+    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    [alert setMessageText:NSLocalizedString(@"Before you report new issue", nil)];
+    [alert setInformativeText:NSLocalizedString(@"Please make sure that you look at the other issues before you submit a new one.", nil)];
+    [alert addButtonWithTitle:NSLocalizedString(@"Take me to github.com", nil)];
+
+    if ([alert runModal] == NSAlertFirstButtonReturn) {
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:kShiftItGithubIssueURL]];
     }
 }
@@ -121,21 +122,18 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 - (IBAction)revealLogFileInFinder:(id)sender {
     if (debugLoggingFile_) {
         NSURL *fileURL = [NSURL fileURLWithPath:debugLoggingFile_];
-        [[NSWorkspace sharedWorkspace] selectFile:[fileURL path] inFileViewerRootedAtPath:nil];
+        [[NSWorkspace sharedWorkspace] selectFile:[fileURL path] inFileViewerRootedAtPath:@""];
     }
 }
 
 - (IBAction)showMenuBarIconAction:(id)sender {
     if (![showMenuIcon state]) {
-        NSAlert *alert = [NSAlert
-                alertWithMessageText:@"Disabling menu icon"
-                       defaultButton:nil
-                     alternateButton:nil
-                         otherButton:nil
-           informativeTextWithFormat:@"You chose to disable the menu icon. This means that you won't be able to easily open the Preferences window in the future.\n"
+        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        [alert setMessageText:@"Disabling menu icon"];
+        [alert setInformativeText:@"You chose to disable the menu icon. This means that you won't be able to easily open the Preferences window in the future.\n"
                    "\n"
                    "To open the Preferences window, while the menu icon is hidden, just relaunch the application."];
-        
+
         [alert runModal];
     }
 }
@@ -151,7 +149,7 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
     id <GTMLogWriter> writer = nil;
 
     if (flag) {
-        NSString *logFile = FMTStr(@"%@/ShiftIt-debug-log-%@.txt",
+        NSString *logFile = FMTStr(@"%@/ShiftItNeo-debug-log-%@.txt",
                 NSTemporaryDirectory(),
                 [[NSDate date] stringWithFormat:@"YYYYMMDD-HHmm"]);
 
@@ -170,15 +168,16 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 #pragma mark shouldStartAtLogin dynamic property methods
 
 - (BOOL)shouldStartAtLogin {
-    NSString *path = [[NSBundle mainBundle] bundlePath];
-    return [[FMTLoginItems sharedSessionLoginItems] isInLoginItemsApplicationWithPath:path];
+    return FMTIsLoginItemEnabled();
 }
 
 - (void)setShouldStartAtLogin:(BOOL)flag {
     FMTLogDebug(@"ShiftIt should start at login: %d", flag);
 
-    NSString *path = [[NSBundle mainBundle] bundlePath];
-    [[FMTLoginItems sharedSessionLoginItems] toggleApplicationInLoginItemsWithPath:path enabled:flag];
+    NSError *error = nil;
+    if (!FMTSetLoginItemEnabled(flag, &error)) {
+        FMTLogError(@"Unable to change the login item: %@", [error localizedDescription]);
+    }
 }
 
 #pragma mark Shortcut Recorder methods
@@ -230,7 +229,7 @@ static NSString *hotkeyIdentifiers[] = {
     NSString* identifier = hotkeyIdentifiers[row];
     if (identifier == NULL)
         return 1;
-    return 23;
+    return 26;
 }
 
 - (NSView *)tableView:(NSTableView *)tableView
@@ -243,8 +242,8 @@ static NSString *hotkeyIdentifiers[] = {
     ShiftItAction *action = [allShiftActions objectForKey:identifier];
     FMTAssertNotNil(action);
     if (tableColumn == hotkeyLabelColumn_) {
-        NSTextField* text = [[NSTextField alloc] initWithFrame:tableView.frame];
-        text.alignment = NSRightTextAlignment;
+        NSTextField* text = [[[NSTextField alloc] initWithFrame:tableView.frame] autorelease];
+        text.alignment = NSTextAlignmentRight;
         text.drawsBackground = NO;
         text.stringValue = action.label;
         [text setBordered:NO];
@@ -252,7 +251,7 @@ static NSString *hotkeyIdentifiers[] = {
         return text;
     }
     if (tableColumn == hotkeyColumn_) {
-        SRRecorderControl* recorder = [[SRRecorderControl alloc] initWithFrame:tableView.frame];
+        SRRecorderControl* recorder = [[[SRRecorderControl alloc] initWithFrame:tableView.frame] autorelease];
         recorder.delegate = self;
         recorder.identifier = identifier;
         [self updateRecorderCombo:recorder forIdentifier:identifier];
@@ -262,7 +261,7 @@ static NSString *hotkeyIdentifiers[] = {
     return NULL;
 }
 
-- (void)shortcutRecorder:(SRRecorderControl *)recorder keyComboDidChange:(KeyCombo)newKeyCombo {
+- (void)recorderControlDidEndRecording:(SRRecorderControl *)recorder {
     NSString *identifier = recorder.identifier;
     FMTAssertNotNil(identifier);
 
@@ -271,10 +270,15 @@ static NSString *hotkeyIdentifiers[] = {
 
     FMTLogDebug(@"ShiftIt action %@ hotkey changed: ", [action identifier]);
 
+    // the preferences keep the key code -1 for an action without a shortcut
+    SRShortcut *shortcut = recorder.objectValue;
+    NSInteger keyCode = shortcut ? shortcut.keyCode : -1;
+    NSUInteger modifiers = shortcut ? shortcut.modifierFlags : 0;
+
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithCapacity:3];
     [userInfo setObject:[action identifier] forKey:kActionIdentifierKey];
-    [userInfo setObject:[NSNumber numberWithInteger:newKeyCombo.code] forKey:kHotKeyKeyCodeKey];
-    [userInfo setObject:[NSNumber numberWithLong:newKeyCombo.flags] forKey:kHotKeyModifiersKey];
+    [userInfo setObject:[NSNumber numberWithInteger:keyCode] forKey:kHotKeyKeyCodeKey];
+    [userInfo setObject:[NSNumber numberWithUnsignedInteger:modifiers] forKey:kHotKeyModifiersKey];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:kHotKeyChangedNotification object:self userInfo:userInfo];
 }
@@ -293,10 +297,17 @@ static NSString *hotkeyIdentifiers[] = {
 
 - (void)updateRecorderCombo:(SRRecorderControl *)recorder forIdentifier:(NSString *)identifier {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    KeyCombo combo;
-    combo.code = [defaults integerForKey:KeyCodePrefKey(identifier)];
-    combo.flags = [defaults integerForKey:ModifiersPrefKey(identifier)];
-    [recorder setKeyCombo:combo];
+    NSInteger keyCode = [defaults integerForKey:KeyCodePrefKey(identifier)];
+    NSUInteger modifiers = [defaults integerForKey:ModifiersPrefKey(identifier)];
+
+    if (keyCode == -1) {
+        recorder.objectValue = nil;
+    } else {
+        recorder.objectValue = [SRShortcut shortcutWithCode:(SRKeyCode)keyCode
+                                              modifierFlags:modifiers & NSEventModifierFlagDeviceIndependentFlagsMask
+                                                 characters:nil
+                                charactersIgnoringModifiers:nil];
+    }
 }
 
 #pragma mark TabView delegate methods

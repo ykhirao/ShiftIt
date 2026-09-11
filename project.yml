@@ -1,0 +1,58 @@
+# Xcode プロジェクトの定義。ShiftItNeo.xcodeproj はここから XcodeGen で生成する（リポジトリには入れない）。
+#   brew install xcodegen && xcodegen generate
+name: ShiftItNeo
+
+options:
+  bundleIdPrefix: io.github.ykhirao
+  deploymentTarget:
+    macOS: "13.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+
+packages:
+  ShortcutRecorder:
+    url: https://github.com/Kentzo/ShortcutRecorder
+    exactVersion: 3.4.0
+
+settings:
+  base:
+    ARCHS: arm64
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    # ARC への移行が済むまでは手動参照カウント（MRC）のまま
+    CLANG_ENABLE_OBJC_ARC: NO
+    GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS: YES
+    GCC_TREAT_INCOMPATIBLE_POINTER_TYPE_WARNINGS_AS_ERRORS: YES
+  configs:
+    Release:
+      GCC_PREPROCESSOR_DEFINITIONS: ["NDEBUG=1", "$(inherited)"]
+
+targets:
+  ShiftItNeo:
+    type: application
+    platform: macOS
+    scheme: {}
+    sources:
+      - path: ShiftIt
+        excludes:
+          - "ShiftIt Tests"
+          - "FMT Tests"
+          - "GHUnitTestMain.m"
+          - "FMT/Readme.md"
+          - "ShiftIt-Info.plist"
+    dependencies:
+      - sdk: Carbon.framework
+      - sdk: Cocoa.framework
+      - sdk: ServiceManagement.framework
+      - package: ShortcutRecorder
+    settings:
+      base:
+        PRODUCT_NAME: ShiftItNeo
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.ykhirao.ShiftItNeo
+        INFOPLIST_FILE: ShiftIt/ShiftIt-Info.plist
+        GCC_PREFIX_HEADER: ShiftIt/ShiftIt_Prefix.pch
+        GCC_PRECOMPILE_PREFIX_HEADER: YES
+        COMBINE_HIDPI_IMAGES: YES
+        # 仮の署名（ad-hoc）。Apple Silicon では署名のないアプリは起動できない
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: ""

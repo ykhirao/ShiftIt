@@ -17,19 +17,12 @@
  
  */
 
-#import <Sparkle/Sparkle.h>
-#import "SBSystemPreferences.h"
 #import "ShiftItAppDelegate.h"
 #import "ShiftItApp.h"
 #import "WindowGeometryShiftItAction.h"
 #import "DefaultShiftItActions.h"
 #import "PreferencesWindowController.h"
 #import "AXWindowDriver.h"
-#import "FMT/FMTNSFileManager+DirectoryLocations.h"
-
-#ifdef X11
-#import "X11WindowDriver.h"
-#endif
 
 
 // the name of the plist file containing the preference defaults
@@ -56,14 +49,15 @@ NSString *const kAXIncludeDrawersPrefKey = @"axdriver_includeDrawers";
 NSString *const kAXDriverConvergePrefKey = @"axdriver_converge";
 NSString *const kAXDriverDelayBetweenOperationsPrefKey = @"axdriver_delayBetweenOperations";
 
+// System Settings > Privacy & Security > Accessibility
+NSString *const kAccessibilitySettingsURL = @"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility";
+
 // notifications
-NSString *const kShowPreferencesRequestNotification = @"org.shiftitapp.shiftit.notifiactions.showPreferences";
+NSString *const kShowPreferencesRequestNotification = @"io.github.ykhirao.ShiftItNeo.notifications.showPreferences";
 
 // icon
 NSString *const kSIIconName = @"ShiftItMenuIcon";
 NSString *const kSIReversedIconName = @"ShiftItMenuIconReversed";
-
-NSString *const kUsageStatisticsFileName = @"usage-statistics.plist";
 
 // the size that should be reserved for the menu item in the system menu in px
 NSInteger const kSIMenuItemSize = 30;
@@ -80,104 +74,6 @@ const CFAbsoluteTime kMinimumTimeBetweenActionInvocations = 0.25; // in seconds
 
 // TODO: move to the class
 NSDictionary *allShiftActions = nil;
-
-@interface SIUsageStatistics : NSObject {
-@private
-    NSMutableDictionary *statistics_;
-
-}
-
-- (id)initFromFile:(NSString *)path;
-
-- (void)increment:(NSString *)key;
-
-- (void)saveToFile:(NSString *)path;
-
-- (NSArray *)toSparkle;
-
-@end
-
-@implementation SIUsageStatistics
-
-- (id)initFromFile:(NSString *)path {
-    if (![super init]) {
-        return nil;
-    }
-
-    NSFileManager *fm = [NSFileManager defaultManager];
-
-    if (![fm fileExistsAtPath:path]) {
-        FMTLogInfo(@"Usage statistics do not exists");
-        statistics_ = [[NSMutableDictionary dictionary] retain];
-    } else {
-        NSData *data = nil;
-        NSString *errorDesc = nil;
-        NSPropertyListFormat format = NSPropertyListBinaryFormat_v1_0;
-
-        data = [fm contentsAtPath:path];
-        NSDictionary *d = (NSDictionary *) [NSPropertyListSerialization
-                propertyListFromData:data
-                    mutabilityOption:NSPropertyListMutableContainersAndLeaves
-                              format:&format
-                    errorDescription:&errorDesc];
-
-        if (d) {
-            FMTLogInfo(@"Loaded usage statistics from: %@", path);
-            statistics_ = [[NSMutableDictionary dictionaryWithDictionary:d] retain];
-        } else {
-            FMTLogError(@"Error reading usage statistics: %@ from: %@ format: %ld", errorDesc, path, NSPropertyListBinaryFormat_v1_0);
-            statistics_ = [[NSMutableDictionary dictionary] retain];
-        }
-    }
-
-    return self;
-}
-
-- (void)dealloc {
-    [statistics_ release];
-
-    [super dealloc];
-}
-
-- (void)increment:(NSString *)key {
-    NSInteger value = 0;
-
-    id stat = [statistics_ objectForKey:key];
-    if (stat) {
-        value = [(NSNumber *) stat integerValue];
-    }
-
-    stat = [NSNumber numberWithInteger:(value + 1)];
-    [statistics_ setObject:stat forKey:key];
-}
-
-- (void)saveToFile:(NSString *)path {
-    NSData *data = nil;
-    NSString *errorDesc = nil;
-
-    data = [NSPropertyListSerialization dataFromPropertyList:statistics_
-                                                      format:NSPropertyListBinaryFormat_v1_0
-                                            errorDescription:&errorDesc];
-
-    if (data) {
-        [data writeToFile:path atomically:YES];
-        FMTLogInfo(@"Save usage statitics to: %@", path);
-    } else {
-        FMTLogError(@"Unable to serialize usage statistics to: %@ - %@", path, errorDesc);
-    }
-}
-
-
-- (NSArray *)toSparkle {
-    NSMutableArray *a = [NSMutableArray array];
-
-    [statistics_ enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
-        [a addObject:FMTEncodeForSparkle(key, value, key, value)];
-    }];
-
-    return [NSArray arrayWithArray:a];
-}
-@end
 
 @implementation ShiftItAction
 
@@ -250,7 +146,6 @@ NSDictionary *allShiftActions = nil;
     FMTHotKeyManager *hotKeyManager_;
     SIWindowManager *windowManager_;
 
-    SIUsageStatistics *usageStatistics_;
     NSMutableDictionary *allHotKeys_;
     BOOL paused_;
 
@@ -275,8 +170,6 @@ NSDictionary *allShiftActions = nil;
     }
 
     allHotKeys_ = [[NSMutableDictionary alloc] init];
-    NSString *usageStatisticsFile = [[[NSFileManager defaultManager] applicationSupportDirectory] stringByAppendingPathComponent:kUsageStatisticsFileName];
-    usageStatistics_ = [[SIUsageStatistics alloc] initFromFile:usageStatisticsFile];
 
     beforeNow_ = CFAbsoluteTimeGetCurrent();
 
@@ -288,7 +181,6 @@ NSDictionary *allShiftActions = nil;
     [windowManager_ release];
     [allHotKeys_ release];
     [preferencesController_ release];
-    [usageStatistics_ release];
 
     [super dealloc];
 }
@@ -297,97 +189,53 @@ NSDictionary *allShiftActions = nil;
     FMTLogInfo(@"First run");
     // ask to start it automatically - make sure it is not there
 
-    // TODO: refactor this so it shares the code from the pref controller
-    FMTLoginItems *loginItems = [FMTLoginItems sharedSessionLoginItems];
-    NSString *appPath = [[NSBundle mainBundle] bundlePath];
+    if (!FMTIsLoginItemEnabled()) {
+        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        [alert setMessageText:NSLocalizedString(@"Start ShiftItNeo automatically?", nil)];
+        [alert setInformativeText:NSLocalizedString(@"Would you like to have ShiftItNeo automatically started at a login time?", nil)];
+        [alert addButtonWithTitle:NSLocalizedString(@"Yes", nil)];
+        [alert addButtonWithTitle:NSLocalizedString(@"No", nil)];
 
-    if (![loginItems isInLoginItemsApplicationWithPath:appPath]) {
-        NSInteger ret = NSRunAlertPanel(NSLocalizedString(@"Start ShiftIt automatically?", nil),
-                                        NSLocalizedString(@"Would you like to have ShiftIt automatically started at a login time?", nil),
-                                        NSLocalizedString(@"Yes", nil), NSLocalizedString(@"No", nil), NULL);
-        switch (ret) {
-            case NSAlertDefaultReturn:
-                // do it!
-                [loginItems toggleApplicationInLoginItemsWithPath:appPath enabled:YES];
-                break;
-            default:
-                break;
+        if ([alert runModal] == NSAlertFirstButtonReturn) {
+            NSError *error = nil;
+            if (!FMTSetLoginItemEnabled(YES, &error)) {
+                FMTLogError(@"Unable to add ShiftIt to the login items: %@", [error localizedDescription]);
+            }
         }
     }
 }
 
 - (void)checkAuthorization {
     // TODO: move to driver
-    if (!AXIsProcessTrusted()) {
-        FMTLogInfo(@"ShiftIt not is authorized");
+    if (AXIsProcessTrusted()) {
+        return;
+    }
 
-        if (AXIsProcessTrustedWithOptions != NULL) {
-            // OSX >= 10.9
+    FMTLogInfo(@"ShiftIt not is authorized");
 
-            NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Authorization Required", nil)
-                                             defaultButton:NSLocalizedString(@"Recheck", nil)
-                                           alternateButton:NSLocalizedString(@"Open System Preferences", nil)
-                                               otherButton:NSLocalizedString(@"Quit", nil)
-                                 informativeTextWithFormat:NSLocalizedString(@"AUTHORIZATION_INFORMATIVE_TEXT_10_9", nil)
-            ];
+    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    [alert setMessageText:NSLocalizedString(@"Authorization Required", nil)];
+    [alert setInformativeText:NSLocalizedString(@"AUTHORIZATION_INFORMATIVE_TEXT", nil)];
+    [alert addButtonWithTitle:NSLocalizedString(@"Recheck", nil)];
+    [alert addButtonWithTitle:NSLocalizedString(@"Open System Settings", nil)];
+    [alert addButtonWithTitle:NSLocalizedString(@"Quit", nil)];
 
-            NSImageView *accessory = [[[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, 300, 234)] autorelease];
-            [accessory setImage:[NSImage imageNamed:@"AccessibilitySettingsMaverick"]];
-            [accessory setImageFrameStyle:NSImageFrameGrayBezel];
-            [alert setAccessoryView:accessory];
+    while (!AXIsProcessTrusted()) {
+        switch ([alert runModal]) {
+            case NSAlertSecondButtonReturn: {
+                // this should hopefully add it to the list so user can only click on the checkbox
+                NSDictionary *options = @{(id) kAXTrustedCheckOptionPrompt : @NO};
+                AXIsProcessTrustedWithOptions((CFDictionaryRef) options);
 
-            BOOL recheck = true;
-            while (recheck) {
-                switch ([alert runModal]) {
-                    case NSAlertDefaultReturn:
-                        recheck = !AXIsProcessTrusted();
-                        break;
-                    case NSAlertOtherReturn:
-                        [NSApp terminate:self];
-                        break;
-                    case NSAlertAlternateReturn: {
-
-                        // this should hopefully add it to the list so user can only click on the checkbox
-                        NSDictionary *options = @{(id) kAXTrustedCheckOptionPrompt : @NO};
-                        AXIsProcessTrustedWithOptions((CFDictionaryRef) options);
-
-                        SBSystemPreferencesApplication *prefs = [SBApplication applicationWithBundleIdentifier:@"com.apple.systempreferences"];
-                        [prefs activate];
-
-                        SBSystemPreferencesPane *pane = [[prefs panes] find:^BOOL(SBSystemPreferencesPane *elem) {
-                            return [[elem id] isEqualToString:@"com.apple.preference.security"];
-                        }];
-                        SBSystemPreferencesAnchor *anchor = [[pane anchors] find:^BOOL(SBSystemPreferencesAnchor *elem) {
-                            return [[elem name] isEqualToString:@"Privacy_Accessibility"];
-                        }];
-
-                        [anchor reveal];
-                    }
-                        break;
-                    default:
-                        break;
-                }
-
+                [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:kAccessibilitySettingsURL]];
+                break;
             }
-        } else {
-            // OSX <= 10.8
-            NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Authorization Required", nil)
-                                             defaultButton:NSLocalizedString(@"Quit", nil)
-                                           alternateButton:nil
-                                               otherButton:NSLocalizedString(@"Open System Preferences", nil)
-                                 informativeTextWithFormat:NSLocalizedString(@"AUTHORIZATION_INFORMATIVE_TEXT_10_8", nil)
-            ];
-
-            NSImageView *accessory = [[[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, 300, 234)] autorelease];
-            [accessory setImage:[NSImage imageNamed:@"AccessibilitySettingsLion"]];
-            [accessory setImageFrameStyle:NSImageFrameGrayBezel];
-            [alert setAccessoryView:accessory];
-
-            if ([alert runModal] == NSAlertOtherReturn) {
-                [[NSWorkspace sharedWorkspace] openFile:@"/System/Library/PreferencePanes/UniversalAccessPref.prefPane"];
-            }
-
-            [NSApp terminate:self];
+            case NSAlertThirdButtonReturn:
+                [NSApp terminate:self];
+                break;
+            default:
+                // recheck
+                break;
         }
     }
 }
@@ -436,23 +284,12 @@ NSDictionary *allShiftActions = nil;
         [drivers addObject:axDriver];
     }
 
-#ifdef X11
-    // initialize X11 driver
-    X11WindowDriver *x11Driver = [[[X11WindowDriver alloc] initWithError:&error] autorelease];
-    if (error) {
-        FMTLogInfo(@"Unable to load X11 driver: %@%@", [error localizedDescription], [error fullDescription]);
-    } else {
-        FMTLogInfo(@"Added driver: %@", [x11Driver description]);
-        [drivers addObject:x11Driver];
-    }
-
     if ([drivers count] == 0) {
         FMTLogError(@"No driver could be loaded - exiting");
         // TODO: externalize
         [NSApp presentError:SICreateError(100, @"No driver could be loaded")];
         [NSApp terminate:self];
     }
-#endif
 
     windowManager_ = [[SIWindowManager alloc] initWithDrivers:[NSArray arrayWithArray:drivers]];
 
@@ -467,8 +304,8 @@ NSDictionary *allShiftActions = nil;
 
         NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithCapacity:3];
         [userInfo setObject:[action identifier] forKey:kActionIdentifierKey];
-        [userInfo setObject:[NSNumber numberWithInt:[defaults integerForKey:KeyCodePrefKey(identifier)]] forKey:kHotKeyKeyCodeKey];
-        [userInfo setObject:[NSNumber numberWithInt:[defaults integerForKey:ModifiersPrefKey(identifier)]] forKey:kHotKeyModifiersKey];
+        [userInfo setObject:[NSNumber numberWithInteger:[defaults integerForKey:KeyCodePrefKey(identifier)]] forKey:kHotKeyKeyCodeKey];
+        [userInfo setObject:[NSNumber numberWithInteger:[defaults integerForKey:ModifiersPrefKey(identifier)]] forKey:kHotKeyModifiersKey];
 
         NSNotification *notification = [NSNotification notificationWithName:kHotKeyChangedNotification object:self userInfo:userInfo];
         [self shiftItActionHotKeyChanged_:notification];
@@ -485,10 +322,6 @@ NSDictionary *allShiftActions = nil;
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
     FMTLogInfo(@"Shutting down ShiftIt...");
-
-    // save usage statistics
-    NSString *usageStatisticsFile = [[[NSFileManager defaultManager] applicationSupportDirectory] stringByAppendingPathComponent:kUsageStatisticsFileName];
-    [usageStatistics_ saveToFile:usageStatisticsFile];
 
     // unregister hotkeys
     for (FMTHotKey *hotKey in [allHotKeys_ allValues]) {
@@ -520,8 +353,7 @@ NSDictionary *allShiftActions = nil;
             
             statusItem_ = [[statusBar statusItemWithLength:kSIMenuItemSize] retain];
             [statusItem_ setMenu:statusMenu_];
-            [statusItem_ setImage:icon];
-            [statusItem_ setHighlightMode:YES];
+            [[statusItem_ button] setImage:icon];
         }
     } else {
         [statusBar removeStatusItem:statusItem_];
@@ -551,13 +383,17 @@ NSDictionary *allShiftActions = nil;
     [menuItem setAction:@selector(shiftItMenuAction_:)];
 
     if (keyCode != -1) {
-        NSString *keyCodeString = SRStringForKeyCode(keyCode);
-        if (!keyCodeString) {
+        SRShortcut *shortcut = [SRShortcut shortcutWithCode:(SRKeyCode)keyCode
+                                              modifierFlags:modifiers & NSEventModifierFlagDeviceIndependentFlagsMask
+                                                 characters:nil
+                                charactersIgnoringModifiers:nil];
+        NSString *keyEquivalent = [[SRKeyEquivalentTransformer sharedTransformer] transformedValue:shortcut];
+        if (!keyEquivalent) {
             FMTLogInfo(@"Unable to get string representation for a key code: %ld", keyCode);
-            keyCodeString = @"";
+            keyEquivalent = @"";
         }
-        [menuItem setKeyEquivalent:[keyCodeString lowercaseString]];
-        [menuItem setKeyEquivalentModifierMask:modifiers];
+        [menuItem setKeyEquivalent:keyEquivalent];
+        [menuItem setKeyEquivalentModifierMask:[[[SRKeyEquivalentModifierMaskTransformer sharedTransformer] transformedValue:shortcut] unsignedIntegerValue]];
     } else {
         [menuItem setKeyEquivalent:@""];
         [menuItem setKeyEquivalentModifierMask:0];
@@ -709,7 +545,6 @@ NSDictionary *allShiftActions = nil;
                             [error localizedDescription],
                             [error fullDescription]);
         }
-        [usageStatistics_ increment:FMTStr(@"action_%@", identifier)];
     }
 }
 
@@ -724,28 +559,5 @@ NSDictionary *allShiftActions = nil;
 
     [self invokeShiftItActionByIdentifier_:identifier];
 }
-
-// This method allows you to add extra parameters to the appcast URL,
-// potentially based on whether or not Sparkle will also be sending along
-// the system profile. This method should return an array of dictionaries
-// with keys: "key", "value", "displayKey", "displayValue", the latter two
-// being human-readable variants of the former two.
-- (NSArray *)feedParametersForUpdater:(SUUpdater *)updater
-                 sendingSystemProfile:(BOOL)sendingProfile {
-    NSMutableArray *a = [NSMutableArray arrayWithArray:[usageStatistics_ toSparkle]];
-
-    // get display information
-    NSArray *screens = [NSScreen screens];
-    NSInteger nScreen = [screens count];
-    [a addObject:FMTEncodeForSparkle(@"n_screens", FMTStr(@"%d", nScreen), @"Number of screens", FMTStr(@"%d", nScreen))];
-
-    for (NSUInteger i = 0; i < nScreen; i++) {
-        NSString *resolution = RECT_STR([[screens objectAtIndex:i] frame]);
-        [a addObject:FMTEncodeForSparkle(FMTStr(@"screen_%d", i), resolution, FMTStr(@"Screen #%d resolution", i), resolution)];
-    }
-
-    return [NSArray arrayWithArray:a];
-}
-
 
 @end

@@ -20,7 +20,6 @@
 #import "FMT.h"
 #import "ShiftIt.h"
 
-extern NSString *const kShiftItAppBundleId;
 
 // indexed using the ShiftItAction identifier
 extern NSDictionary *allShiftActions;

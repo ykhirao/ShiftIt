@@ -20,11 +20,11 @@
  THE SOFTWARE.
  */
 
+#import <ServiceManagement/ServiceManagement.h>
+
 #import "FMTUtils.h"
 #import "FMTDefines.h"
 #import "GTMLogger.h"
-
-NSString *const kSystemPreferencesAppBundeId = @"com.apple.systempreferences";
 
 NSString *FMTGetBundleResourcePath(NSBundle *bundle, NSString *resourceName, NSString *resourceType) {
 	FMTAssertNotNil(bundle);
@@ -57,61 +57,16 @@ NSURL *FMTGetMainBundleResourceURL(NSString *resourceName, NSString *resourceTyp
 	return FMTGetBundleResourceURL([NSBundle mainBundle], resourceName, resourceType);
 }
 
-BOOL FMTOpenSystemPreferencePane(NSString *prefPaneId) {
-	FMTAssertNotNil(prefPaneId);
-	
-	NSString *source = FMTStr(@"tell application \"System Preferences\"\n"
-							"activate\n"
-							"set current pane to pane \"%@\"\n"
-							"end tell\n", prefPaneId);
-	
-	NSAppleScript *script = [[NSAppleScript alloc] initWithSource:source];
-	
-	NSDictionary *dict = nil;
-	NSAppleEventDescriptor *event = [script executeAndReturnError:&dict];
+BOOL FMTIsLoginItemEnabled(void) {
+	return [SMAppService mainAppService].status == SMAppServiceStatusEnabled;
+}
 
-	if (dict) {
-		GTMLoggerError(@"Compilation of AppleScript: %@ failed: %@", source, dict);
+BOOL FMTSetLoginItemEnabled(BOOL enabled, NSError **error) {
+	SMAppService *service = [SMAppService mainAppService];
+
+	if (enabled) {
+		return [service registerAndReturnError:error];
+	} else {
+		return [service unregisterAndReturnError:error];
 	}
-	
-	[script release];	
-	
-	return event != nil;
-}
-
-NSInteger FMTNumberOfRunningProcessesWithBundleId(NSString *bundleId) {
-	FMTAssertNotNil(bundleId);
-	
-	NSInteger n = 0;
-	ProcessSerialNumber PSN = { kNoProcess, kNoProcess };
-	
-	while (GetNextProcess(&PSN) == noErr) {
-		NSDictionary *infoDict = (NSDictionary *)ProcessInformationCopyDictionary(&PSN, kProcessDictionaryIncludeAllInformationMask);
-		if(infoDict) {
-			NSString *processBundleID = [infoDict objectForKey:(NSString *)kCFBundleIdentifierKey];
-			if (processBundleID && [processBundleID isEqualToString:bundleId]) {
-				n++;
-			}
-			
-			CFMakeCollectable(infoDict);
-			[infoDict release];
-		}
-	}
-	
-	return n;
-}
-
-BOOL FMTIsProcessWithBundleIdRunning(NSString *bundleId) {
-	return FMTNumberOfRunningProcessesWithBundleId(bundleId) >= 1;
-}
-
-NSDictionary *FMTEncodeForSparkle(NSString *key, NSString *value, NSString *displayKey, NSString *displayValue) {
-    NSMutableDictionary *d = [NSMutableDictionary dictionary];
-
-    [d setObject:key forKey:@"key"];
-    [d setObject:value forKey:@"value"];
-    [d setObject:displayKey forKey:@"displayKey"];
-    [d setObject:displayValue forKey:@"displayValue"];
-
-    return [NSDictionary dictionaryWithDictionary:d];
 }

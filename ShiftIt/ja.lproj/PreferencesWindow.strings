@@ -8,12 +8,6 @@
 /* Class = "NSButtonCell"; title = "Open At Login"; ObjectID = "63"; */
 "63.title" = "ログイン時に開く";
 
-/* Class = "NSButtonCell"; title = "Automatically Check For Updates"; ObjectID = "65"; */
-"65.title" = "アップデートを自動的に確認";
-
-/* Class = "NSButtonCell"; title = "Check For Updates Now"; ObjectID = "67"; */
-"67.title" = "アップデートを確認...";
-
 /* Class = "NSButtonCell"; title = "Show Icon In Menu Bar"; ObjectID = "257"; */
 "257.title" = "メニューバーにアイコンを表示";
 
@@ -50,8 +44,8 @@
 /* Class = "NSTextFieldCell"; title = "Center"; ObjectID = "561"; */
 "561.title" = "センタリング";
 
-/* Class = "NSTextFieldCell"; title = "ShiftIt App"; ObjectID = "583"; */
-"583.title" = "ShiftIt App";
+/* Class = "NSTextFieldCell"; title = "ShiftItNeo"; ObjectID = "583"; */
+"583.title" = "ShiftItNeo";
 
 /* Class = "NSTextFieldCell"; title = "version"; ObjectID = "585"; */
 "585.title" = "version";
@@ -86,8 +80,8 @@
 /* Class = "NSTextFieldCell"; title = "height"; ObjectID = "808"; */
 "808.title" = "高さ";
 
-/* Class = "NSButtonCell"; title = "Quit ShiftIt"; ObjectID = "814"; */
-"814.title" = "ShiftItの終了";
+/* Class = "NSButtonCell"; title = "Quit ShiftItNeo"; ObjectID = "814"; */
+"814.title" = "ShiftItNeo を終了";
 
 /* Class = "NSButtonCell"; title = "Include Window Drawers"; ObjectID = "820"; */
 "820.title" = "ドロワーを含める";

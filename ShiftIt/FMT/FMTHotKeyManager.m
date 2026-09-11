@@ -106,12 +106,13 @@ static inline OSStatus hotKeyHandler(EventHandlerCallRef inHandlerCallRef,EventR
 	GetEventParameter(inEvent,kEventParamDirectObject,typeEventHotKeyID,NULL,
 					  sizeof(hotKeyID),NULL,&hotKeyID);
 	
-	NSNumber *id = [NSNumber numberWithInt:hotKeyID.id];
+	NSNumber *hotKeyNumber = [NSNumber numberWithInt:hotKeyID.id];
 	
-	TWHotKeyRegistartion* hotKeyReg = [allHotKeys objectForKey:id];
+	TWHotKeyRegistartion* hotKeyReg = [allHotKeys objectForKey:hotKeyNumber];
 	
 	if (hotKeyReg != nil) {
-		objc_msgSend([hotKeyReg provider], [hotKeyReg handler], [hotKeyReg userData]);
+		// objc_msgSend must be cast to the exact method type; arm64 does not pass arguments like a variadic call
+		((void (*)(id, SEL, id))objc_msgSend)([hotKeyReg provider], [hotKeyReg handler], [hotKeyReg userData]);
 		return noErr;
 	} else {
 		return eventNotHandledErr;
@@ -181,10 +182,10 @@ SINGLETON_BOILERPLATE(FMTHotKeyManager, sharedHotKeyManager);
 	// TODO: extract
 	hotKeyID.signature = 'TFMT';
 	// TODO: make sure it is thread safe
-	hotKeyID.id = hotKeyIdSequence_++;
+	hotKeyID.id = (UInt32)hotKeyIdSequence_++;
 	
 	EventHotKeyRef hotKeyRef;
-	RegisterEventHotKey([hotKey keyCode], [hotKey carbonModifiers], hotKeyID,
+	RegisterEventHotKey((UInt32)[hotKey keyCode], (UInt32)[hotKey carbonModifiers], hotKeyID,
 						GetApplicationEventTarget(), 0, &hotKeyRef);
 	
 	if (!hotKeyRef) {
