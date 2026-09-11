@@ -67,15 +67,14 @@ targets:
     platform: macOS
     sources:
       - path: Tests
-      - path: ShiftIt/SIAdjacentRectangles.m
-        group: Tests/Sources
-      - path: ShiftIt/FMTGeometry.m
-        group: Tests/Sources
-      - path: ShiftIt/FMT/FMTNSArray+Functional.m
-        group: Tests/Sources
+      - ShiftIt/SIAdjacentRectangles.m
+      - ShiftIt/FMTGeometry.m
+      - ShiftIt/FMT/FMTNSArray+Functional.m
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.github.ykhirao.ShiftItNeoTests
+        # XCTest が macOS 14 向けにビルドされているので、テストだけ 14 にする（テストは CI でしか動かさない）
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
         GENERATE_INFOPLIST_FILE: YES
         HEADER_SEARCH_PATHS: ["$(inherited)", "$(PROJECT_DIR)/ShiftIt", "$(PROJECT_DIR)/ShiftIt/FMT", "$(PROJECT_DIR)/ShiftIt/GTM"]
         GCC_PREFIX_HEADER: ShiftIt/ShiftIt_Prefix.pch
