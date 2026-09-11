@@ -17,7 +17,6 @@
  
  */
 
-#import "SBSystemPreferences.h"
 #import "ShiftItAppDelegate.h"
 #import "ShiftItApp.h"
 #import "WindowGeometryShiftItAction.h"
@@ -49,6 +48,9 @@ NSString *const kMutipleActionsCycleWindowSizes = @"multipleActionsCycleWindowSi
 NSString *const kAXIncludeDrawersPrefKey = @"axdriver_includeDrawers";
 NSString *const kAXDriverConvergePrefKey = @"axdriver_converge";
 NSString *const kAXDriverDelayBetweenOperationsPrefKey = @"axdriver_delayBetweenOperations";
+
+// System Settings > Privacy & Security > Accessibility
+NSString *const kAccessibilitySettingsURL = @"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility";
 
 // notifications
 NSString *const kShowPreferencesRequestNotification = @"org.shiftitapp.shiftit.notifiactions.showPreferences";
@@ -208,76 +210,35 @@ NSDictionary *allShiftActions = nil;
 
 - (void)checkAuthorization {
     // TODO: move to driver
-    if (!AXIsProcessTrusted()) {
-        FMTLogInfo(@"ShiftIt not is authorized");
+    if (AXIsProcessTrusted()) {
+        return;
+    }
 
-        if (AXIsProcessTrustedWithOptions != NULL) {
-            // OSX >= 10.9
+    FMTLogInfo(@"ShiftIt not is authorized");
 
-            NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Authorization Required", nil)
-                                             defaultButton:NSLocalizedString(@"Recheck", nil)
-                                           alternateButton:NSLocalizedString(@"Open System Preferences", nil)
-                                               otherButton:NSLocalizedString(@"Quit", nil)
-                                 informativeTextWithFormat:NSLocalizedString(@"AUTHORIZATION_INFORMATIVE_TEXT_10_9", nil)
-            ];
+    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    [alert setMessageText:NSLocalizedString(@"Authorization Required", nil)];
+    [alert setInformativeText:NSLocalizedString(@"AUTHORIZATION_INFORMATIVE_TEXT", nil)];
+    [alert addButtonWithTitle:NSLocalizedString(@"Recheck", nil)];
+    [alert addButtonWithTitle:NSLocalizedString(@"Open System Settings", nil)];
+    [alert addButtonWithTitle:NSLocalizedString(@"Quit", nil)];
 
-            NSImageView *accessory = [[[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, 300, 234)] autorelease];
-            [accessory setImage:[NSImage imageNamed:@"AccessibilitySettingsMaverick"]];
-            [accessory setImageFrameStyle:NSImageFrameGrayBezel];
-            [alert setAccessoryView:accessory];
+    while (!AXIsProcessTrusted()) {
+        switch ([alert runModal]) {
+            case NSAlertSecondButtonReturn: {
+                // this should hopefully add it to the list so user can only click on the checkbox
+                NSDictionary *options = @{(id) kAXTrustedCheckOptionPrompt : @NO};
+                AXIsProcessTrustedWithOptions((CFDictionaryRef) options);
 
-            BOOL recheck = true;
-            while (recheck) {
-                switch ([alert runModal]) {
-                    case NSAlertDefaultReturn:
-                        recheck = !AXIsProcessTrusted();
-                        break;
-                    case NSAlertOtherReturn:
-                        [NSApp terminate:self];
-                        break;
-                    case NSAlertAlternateReturn: {
-
-                        // this should hopefully add it to the list so user can only click on the checkbox
-                        NSDictionary *options = @{(id) kAXTrustedCheckOptionPrompt : @NO};
-                        AXIsProcessTrustedWithOptions((CFDictionaryRef) options);
-
-                        SBSystemPreferencesApplication *prefs = [SBApplication applicationWithBundleIdentifier:@"com.apple.systempreferences"];
-                        [prefs activate];
-
-                        SBSystemPreferencesPane *pane = [[prefs panes] find:^BOOL(SBSystemPreferencesPane *elem) {
-                            return [[elem id] isEqualToString:@"com.apple.preference.security"];
-                        }];
-                        SBSystemPreferencesAnchor *anchor = [[pane anchors] find:^BOOL(SBSystemPreferencesAnchor *elem) {
-                            return [[elem name] isEqualToString:@"Privacy_Accessibility"];
-                        }];
-
-                        [anchor reveal];
-                    }
-                        break;
-                    default:
-                        break;
-                }
-
+                [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:kAccessibilitySettingsURL]];
+                break;
             }
-        } else {
-            // OSX <= 10.8
-            NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Authorization Required", nil)
-                                             defaultButton:NSLocalizedString(@"Quit", nil)
-                                           alternateButton:nil
-                                               otherButton:NSLocalizedString(@"Open System Preferences", nil)
-                                 informativeTextWithFormat:NSLocalizedString(@"AUTHORIZATION_INFORMATIVE_TEXT_10_8", nil)
-            ];
-
-            NSImageView *accessory = [[[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, 300, 234)] autorelease];
-            [accessory setImage:[NSImage imageNamed:@"AccessibilitySettingsLion"]];
-            [accessory setImageFrameStyle:NSImageFrameGrayBezel];
-            [alert setAccessoryView:accessory];
-
-            if ([alert runModal] == NSAlertOtherReturn) {
-                [[NSWorkspace sharedWorkspace] openFile:@"/System/Library/PreferencePanes/UniversalAccessPref.prefPane"];
-            }
-
-            [NSApp terminate:self];
+            case NSAlertThirdButtonReturn:
+                [NSApp terminate:self];
+                break;
+            default:
+                // recheck
+                break;
         }
     }
 }
