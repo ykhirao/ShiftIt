@@ -6,7 +6,7 @@
 
 - ShiftIt は、キーボードショートカットでウィンドウの位置と大きさを変える macOS のメニューバーアプリです。ライセンスは GPLv3。
 - [fikovnik/ShiftIt](https://github.com/fikovnik/ShiftIt) のフォーク（[ykhirao/ShiftIt](https://github.com/ykhirao/ShiftIt)）です。本家は 2023 年を最後に更新がありません。
-- **このフォークの目標は、最新の Mac（Apple Silicon・最新の macOS）でネイティブに動かすことです。**
+- **このフォークの目標は、最新の Mac（Apple Silicon・最新の macOS）でネイティブに動かすことです。** 対象は Apple Silicon（M1 以降）の Mac だけで、Intel Mac には対応しない。
 - **本家の古い流儀には従わなくてよい。** コードの書き方、ビルドの仕組み、ドキュメントは今のやり方に合わせて作り直してよい。本家へ変更を戻すことは考えない。
 
 ## ブランチ運用
@@ -19,7 +19,7 @@
 ## 方針
 
 - **最低対応 OS は macOS 13。** ログイン項目の API（`SMAppService`）が 13 からなので、それ未満は切り捨てる。
-- **CPU は arm64 と x86_64 の両方**（Universal）を作る。
+- **CPU は arm64 だけ**を作る（Apple Silicon 専用。x86_64 は作らない）。
 - **メモリ管理は ARC に移す。** 今のコードは手動参照カウント（MRC）で、`retain` / `release` / `autorelease` を書いている。
 - **依存ライブラリは Swift Package Manager で入れる。** ビルド済みの `.framework` をリポジトリに置くのはやめる。
 - **X11（XQuartz）対応はやめる。** `ShiftIt NoX11` ターゲットを残し、X11 まわりのコードとターゲットは削除してよい。
@@ -57,7 +57,8 @@
 ## ビルドと動作確認
 
 - 開発機に Xcode はない（Command Line Tools のみ）。**ビルドは GitHub Actions の macOS ランナーで行う。** 公開リポジトリなので無料。
-  - CI の設定はまだない（次の作業で追加する）。
+  - 設定は `.github/workflows/build.yml`。`main` / `develop` への push と PR で動く。できたアプリ（`ShiftIt.zip`）とビルドログは、実行結果の Artifacts からダウンロードできる。
+  - 結果の確認：`gh run list --branch develop`、`gh run view <ID> --log-failed`
 - Xcode がある環境なら、`xcode-select` を切り替えなくても次のように指定してビルドできる：
 
   ```sh
@@ -75,7 +76,7 @@
 - [ ] **CI を作る**：GitHub Actions で `ShiftIt NoX11` をビルドし、できたアプリを成果物として残す。
 - [ ] **Sparkle を削除する**：同梱の 1.5 Beta 6 は PowerPC・32bit Intel・64bit Intel 向けのみ。更新の確認先（`SUFeedURL`）は本家の appcast で、署名鍵も本家しか持っていないので、このフォークでは元々機能しない。自動アップデートが要るなら、あとで Sparkle 2 を入れ直す。
 - [ ] **ShortcutRecorder を 3.x に置き換える**（Swift Package Manager で入れる）：同梱版は Intel 向けのみ。関係するのは `FMT/FMTHotKey+SRKeyCombo.*`、`FMT/FMTHotKey.m`、`FMT/FMTHotKeyManager.m`、`PreferencesWindowController.*`、`Base.lproj/PreferencesWindow.xib`。
-- [ ] **ビルド設定を更新する**：最低対応 OS を macOS 13 に、CPU を arm64 + x86_64 にする。プロジェクト形式も今の Xcode に合わせる。
+- [ ] **ビルド設定を更新する**：最低対応 OS を macOS 13 に、CPU を arm64 だけにする。プロジェクト形式も今の Xcode に合わせる。
 - [ ] **X11 対応を削除する**：`X11WindowDriver.*` と `ShiftIt` ターゲット（X11 版）。
 - [ ] **廃止された API を置き換える**：
   - ガベージコレクション：`GTM/GTMGarbageCollection.h`（`NSGarbageCollector`）、`NSMakeCollectable`
