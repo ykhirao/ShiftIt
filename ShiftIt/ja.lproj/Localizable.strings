@@ -33,3 +33,10 @@
 "Would you like to have ShiftItNeo automatically started at a login time?" = "ログイン時に自動的に ShiftItNeo を開始しますか?";
 "Yes" = "はい";
 "No" = "いいえ";
+
+"Before you report new issue" = "不具合を報告する前に";
+"Please make sure that you look at the other issues before you submit a new one." = "新しく報告する前に、同じ内容の報告がすでにないか確認してください。";
+"Take me to github.com" = "GitHub を開く";
+
+"Disabling menu icon" = "メニューバーのアイコンを隠します";
+"MENU_ICON_DISABLED_INFORMATIVE_TEXT" = "メニューバーのアイコンを隠すと、設定画面を開きにくくなります。\n\nアイコンを隠している間に設定画面を開くには、ShiftItNeo をもう一度起動してください。";

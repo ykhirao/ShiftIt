@@ -13,28 +13,26 @@
 
 ## インストール
 
-今のところ、GitHub Actions でビルドしたアプリを配っています。
+1. [Releases](https://github.com/ykhirao/ShiftIt/releases/latest) から `ShiftItNeo-*.zip` をダウンロードして展開し、`ShiftItNeo.app` を `/Applications` に移す。
 
-1. アプリをダウンロードする（[GitHub CLI](https://cli.github.com/) を使う場合）：
-
-   ```sh
-   id=$(gh run list --repo ykhirao/ShiftIt --workflow Build --branch main --status success --limit 1 --json databaseId -q '.[0].databaseId')
-   gh run download "$id" --repo ykhirao/ShiftIt --name ShiftItNeo
-   ```
-
-   開発中の版を試すときは `--branch develop` にします。ブラウザからなら、[Actions](https://github.com/ykhirao/ShiftIt/actions/workflows/build.yml) の実行結果の Artifacts から `ShiftItNeo` をダウンロードできます（GitHub へのログインが必要です）。
-
-2. `ShiftItNeo.zip` を展開し、`ShiftItNeo.app` を `/Applications` に移す。
-
-3. Apple の公証を受けていないので、ブラウザでダウンロードした場合は起動が止められます。次のコマンドで隔離属性を外してください：
+2. Apple の公証を受けていないので、そのままでは起動が止められます。次のコマンドで隔離属性を外してください：
 
    ```sh
    xattr -dr com.apple.quarantine /Applications/ShiftItNeo.app
    ```
 
-4. ShiftItNeo を起動し、**システム設定 > プライバシーとセキュリティ > アクセシビリティ** で ShiftItNeo をオンにする。
+3. ShiftItNeo を起動し、**システム設定 > プライバシーとセキュリティ > アクセシビリティ** で ShiftItNeo をオンにする。
 
 アプリは自己署名証明書で署名しているので、新しい版に入れ替えてもアクセシビリティの許可はそのまま引き継がれます。うまく動かないときは、一度オフにしてからオンにし直してください。
+
+### 開発中の版を試す
+
+`develop` ブランチのビルドは、GitHub Actions の成果物として取れます（[GitHub CLI](https://cli.github.com/) を使う場合）：
+
+```sh
+id=$(gh run list --repo ykhirao/ShiftIt --workflow Build --branch develop --status success --limit 1 --json databaseId -q '.[0].databaseId')
+gh run download "$id" --repo ykhirao/ShiftIt --name ShiftItNeo
+```
 
 ## 使い方
 
@@ -67,7 +65,9 @@ ShiftItNeo をもう一度起動すると、設定画面が開きます。
   xcodebuild -project ShiftItNeo.xcodeproj -scheme ShiftItNeo -configuration Release build
   ```
 
-- `develop` ブランチで開発し、`main` にマージします。push すると GitHub Actions でビルドされます。
+- `develop` ブランチで開発し、`main` にマージします。push すると GitHub Actions でビルドと単体テストが動きます。
+- リリースするときは、`project.yml` の `MARKETING_VERSION` を上げてから、同じ番号のタグ（例：`v2.0.0`）を `main` に push します。GitHub Actions がビルドして Releases に公開します。
+- 不具合の報告は [Issues](https://github.com/ykhirao/ShiftIt/issues) へ。
 
 ## ライセンス
 

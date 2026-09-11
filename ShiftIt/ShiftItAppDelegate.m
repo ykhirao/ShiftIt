@@ -92,20 +92,12 @@ NSDictionary *allShiftActions = nil;
         return nil;
     }
 
-    identifier_ = [identifier retain];
-    label_ = [label retain];
+    identifier_ = identifier;
+    label_ = label;
     uiTag_ = uiTag;
-    delegate_ = [delegate retain];
+    delegate_ = delegate;
 
     return self;
-}
-
-- (void)dealloc {
-    [identifier_ release];
-    [label_ release];
-    [delegate_ release];
-
-    [super dealloc];
 }
 
 - (BOOL)execute:(id <SIWindowContext>)windowContext error:(NSError **)error {
@@ -176,21 +168,12 @@ NSDictionary *allShiftActions = nil;
     return self;
 }
 
-- (void)dealloc {
-    [allShiftActions release];
-    [windowManager_ release];
-    [allHotKeys_ release];
-    [preferencesController_ release];
-
-    [super dealloc];
-}
-
 - (void)firstLaunch_ {
     FMTLogInfo(@"First run");
     // ask to start it automatically - make sure it is not there
 
     if (!FMTIsLoginItemEnabled()) {
-        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        NSAlert *alert = [[NSAlert alloc] init];
         [alert setMessageText:NSLocalizedString(@"Start ShiftItNeo automatically?", nil)];
         [alert setInformativeText:NSLocalizedString(@"Would you like to have ShiftItNeo automatically started at a login time?", nil)];
         [alert addButtonWithTitle:NSLocalizedString(@"Yes", nil)];
@@ -213,7 +196,7 @@ NSDictionary *allShiftActions = nil;
 
     FMTLogInfo(@"ShiftIt not is authorized");
 
-    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    NSAlert *alert = [[NSAlert alloc] init];
     [alert setMessageText:NSLocalizedString(@"Authorization Required", nil)];
     [alert setInformativeText:NSLocalizedString(@"AUTHORIZATION_INFORMATIVE_TEXT", nil)];
     [alert addButtonWithTitle:NSLocalizedString(@"Recheck", nil)];
@@ -224,8 +207,8 @@ NSDictionary *allShiftActions = nil;
         switch ([alert runModal]) {
             case NSAlertSecondButtonReturn: {
                 // this should hopefully add it to the list so user can only click on the checkbox
-                NSDictionary *options = @{(id) kAXTrustedCheckOptionPrompt : @NO};
-                AXIsProcessTrustedWithOptions((CFDictionaryRef) options);
+                NSDictionary *options = @{(__bridge id) kAXTrustedCheckOptionPrompt : @NO};
+                AXIsProcessTrustedWithOptions((__bridge CFDictionaryRef) options);
 
                 [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:kAccessibilitySettingsURL]];
                 break;
@@ -265,7 +248,7 @@ NSDictionary *allShiftActions = nil;
 
     // initialize AX driver
     // TODO: keep the reference and register listener for preference changes
-    AXWindowDriver *axDriver = [[[AXWindowDriver alloc] initWithError:&error] autorelease];
+    AXWindowDriver *axDriver = [[AXWindowDriver alloc] initWithError:&error];
     // set defaults
     if ([defaults objectForKey:kAXIncludeDrawersPrefKey]) {
         [axDriver setShouldUseDrawers:[defaults boolForKey:kAXIncludeDrawersPrefKey]];
@@ -297,7 +280,7 @@ NSDictionary *allShiftActions = nil;
     [self updateMenuBarIcon_];
 
     NSUserDefaultsController *userDefaultsController = [NSUserDefaultsController sharedUserDefaultsController];
-    [userDefaultsController addObserver:self forKeyPath:FMTStr(@"values.%@", kShowMenuPrefKey) options:0 context:self];
+    [userDefaultsController addObserver:self forKeyPath:FMTStr(@"values.%@", kShowMenuPrefKey) options:0 context:(__bridge void *)self];
 
     for (ShiftItAction *action in [allShiftActions allValues]) {
         NSString *identifier = [action identifier];
@@ -351,13 +334,12 @@ NSDictionary *allShiftActions = nil;
             NSImage *icon = [NSImage imageNamed:kSIIconName];
             [icon setTemplate:YES];
             
-            statusItem_ = [[statusBar statusItemWithLength:kSIMenuItemSize] retain];
+            statusItem_ = [statusBar statusItemWithLength:kSIMenuItemSize];
             [statusItem_ setMenu:statusMenu_];
             [[statusItem_ button] setImage:icon];
         }
     } else {
         [statusBar removeStatusItem:statusItem_];
-        [statusItem_ autorelease];
         statusItem_ = nil;
     }
 }
@@ -409,38 +391,38 @@ NSDictionary *allShiftActions = nil;
     ShiftItAction *action = nil;
 
 #define REGISTER_ACTION(dict, anId, aLabel, aTag, aDelegate) \
-    action = [[[ShiftItAction alloc] initWithIdentifier:(anId) label:(aLabel) uiTag:(aTag) delegate:(aDelegate)] autorelease]; \
+    action = [[ShiftItAction alloc] initWithIdentifier:(anId) label:(aLabel) uiTag:(aTag) delegate:(aDelegate)]; \
     [(dict) setObject:action forKey:[action identifier]];
 
-    REGISTER_ACTION(dict, @"left", NSLocalizedString(@"Left", nil), 1, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItLeft] autorelease]);
-    REGISTER_ACTION(dict, @"right", NSLocalizedString(@"Right", nil), 2, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItRight] autorelease]);
-    REGISTER_ACTION(dict, @"top", NSLocalizedString(@"Top", nil), 3, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItTop] autorelease]);
-    REGISTER_ACTION(dict, @"bottom", NSLocalizedString(@"Bottom", nil), 4, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItBottom] autorelease]);
-    REGISTER_ACTION(dict, @"tl", NSLocalizedString(@"Top Left", nil), 5, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItTopLeft] autorelease]);
-    REGISTER_ACTION(dict, @"tr", NSLocalizedString(@"Top Right", nil), 6, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItTopRight] autorelease]);
-    REGISTER_ACTION(dict, @"bl", NSLocalizedString(@"Bottom Left", nil), 7, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItBottomLeft] autorelease]);
-    REGISTER_ACTION(dict, @"br", NSLocalizedString(@"Bottom Right", nil), 8, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItBottomRight] autorelease]);
-    REGISTER_ACTION(dict, @"ltt", NSLocalizedString(@"Left Third Top", nil), 9, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdTopLeft] autorelease]);
-    REGISTER_ACTION(dict, @"ltb", NSLocalizedString(@"Left Third Bottom", nil), 10, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdBottomLeft] autorelease]);
-    REGISTER_ACTION(dict, @"ctt", NSLocalizedString(@"Center Third Top", nil), 11, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdTopCenter] autorelease]);
-    REGISTER_ACTION(dict, @"ctb", NSLocalizedString(@"Center Third Bottom", nil), 12, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdBottomCenter] autorelease]);
-    REGISTER_ACTION(dict, @"rtt", NSLocalizedString(@"Right Third Top", nil), 13, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdTopRight] autorelease]);
-    REGISTER_ACTION(dict, @"rtb", NSLocalizedString(@"Right Third Bottom", nil), 14, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdBottomRight] autorelease]);
-    REGISTER_ACTION(dict, @"lt", NSLocalizedString(@"Left Third", nil), 15, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdLeft] autorelease]);
-    REGISTER_ACTION(dict, @"ct", NSLocalizedString(@"Center Third", nil), 16, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdCenter] autorelease]);
-    REGISTER_ACTION(dict, @"rt", NSLocalizedString(@"Right Third", nil), 17, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdRight] autorelease]);
-    REGISTER_ACTION(dict, @"center", NSLocalizedString(@"Center", nil), 18, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItCenter] autorelease]);
-    REGISTER_ACTION(dict, @"zoom", NSLocalizedString(@"Toggle Zoom", nil), 19, [[[ToggleZoomShiftItAction alloc] init] autorelease]);
-    REGISTER_ACTION(dict, @"maximize", NSLocalizedString(@"Maximize", nil), 20, [[[WindowGeometryShiftItAction alloc] initWithBlock:shiftItFullScreen] autorelease]);
-    REGISTER_ACTION(dict, @"fullScreen", NSLocalizedString(@"Toggle Full Screen", nil), 21, [[[ToggleFullScreenShiftItAction alloc] init] autorelease]);
-    REGISTER_ACTION(dict, @"increase", NSLocalizedString(@"Increase", nil), 22, [[[IncreaseReduceShiftItAction alloc] initWithMode:YES] autorelease]);
-    REGISTER_ACTION(dict, @"reduce", NSLocalizedString(@"Reduce", nil), 23, [[[IncreaseReduceShiftItAction alloc] initWithMode:NO] autorelease]);
-    REGISTER_ACTION(dict, @"nextscreen", NSLocalizedString(@"Next Screen", nil), 24, [[[ScreenChangeShiftItAction alloc] initWithMode:YES] autorelease]);
-    REGISTER_ACTION(dict, @"previousscreen", NSLocalizedString(@"Previous Screen", nil), 25, [[[ScreenChangeShiftItAction alloc] initWithMode:NO] autorelease]);
+    REGISTER_ACTION(dict, @"left", NSLocalizedString(@"Left", nil), 1, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItLeft]);
+    REGISTER_ACTION(dict, @"right", NSLocalizedString(@"Right", nil), 2, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItRight]);
+    REGISTER_ACTION(dict, @"top", NSLocalizedString(@"Top", nil), 3, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItTop]);
+    REGISTER_ACTION(dict, @"bottom", NSLocalizedString(@"Bottom", nil), 4, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItBottom]);
+    REGISTER_ACTION(dict, @"tl", NSLocalizedString(@"Top Left", nil), 5, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItTopLeft]);
+    REGISTER_ACTION(dict, @"tr", NSLocalizedString(@"Top Right", nil), 6, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItTopRight]);
+    REGISTER_ACTION(dict, @"bl", NSLocalizedString(@"Bottom Left", nil), 7, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItBottomLeft]);
+    REGISTER_ACTION(dict, @"br", NSLocalizedString(@"Bottom Right", nil), 8, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItBottomRight]);
+    REGISTER_ACTION(dict, @"ltt", NSLocalizedString(@"Left Third Top", nil), 9, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdTopLeft]);
+    REGISTER_ACTION(dict, @"ltb", NSLocalizedString(@"Left Third Bottom", nil), 10, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdBottomLeft]);
+    REGISTER_ACTION(dict, @"ctt", NSLocalizedString(@"Center Third Top", nil), 11, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdTopCenter]);
+    REGISTER_ACTION(dict, @"ctb", NSLocalizedString(@"Center Third Bottom", nil), 12, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdBottomCenter]);
+    REGISTER_ACTION(dict, @"rtt", NSLocalizedString(@"Right Third Top", nil), 13, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdTopRight]);
+    REGISTER_ACTION(dict, @"rtb", NSLocalizedString(@"Right Third Bottom", nil), 14, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdBottomRight]);
+    REGISTER_ACTION(dict, @"lt", NSLocalizedString(@"Left Third", nil), 15, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdLeft]);
+    REGISTER_ACTION(dict, @"ct", NSLocalizedString(@"Center Third", nil), 16, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdCenter]);
+    REGISTER_ACTION(dict, @"rt", NSLocalizedString(@"Right Third", nil), 17, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItThirdRight]);
+    REGISTER_ACTION(dict, @"center", NSLocalizedString(@"Center", nil), 18, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItCenter]);
+    REGISTER_ACTION(dict, @"zoom", NSLocalizedString(@"Toggle Zoom", nil), 19, [[ToggleZoomShiftItAction alloc] init]);
+    REGISTER_ACTION(dict, @"maximize", NSLocalizedString(@"Maximize", nil), 20, [[WindowGeometryShiftItAction alloc] initWithBlock:shiftItFullScreen]);
+    REGISTER_ACTION(dict, @"fullScreen", NSLocalizedString(@"Toggle Full Screen", nil), 21, [[ToggleFullScreenShiftItAction alloc] init]);
+    REGISTER_ACTION(dict, @"increase", NSLocalizedString(@"Increase", nil), 22, [[IncreaseReduceShiftItAction alloc] initWithMode:YES]);
+    REGISTER_ACTION(dict, @"reduce", NSLocalizedString(@"Reduce", nil), 23, [[IncreaseReduceShiftItAction alloc] initWithMode:NO]);
+    REGISTER_ACTION(dict, @"nextscreen", NSLocalizedString(@"Next Screen", nil), 24, [[ScreenChangeShiftItAction alloc] initWithMode:YES]);
+    REGISTER_ACTION(dict, @"previousscreen", NSLocalizedString(@"Previous Screen", nil), 25, [[ScreenChangeShiftItAction alloc] initWithMode:NO]);
 
 #undef REGISTER_ACTION
 
-    allShiftActions = [[NSDictionary dictionaryWithDictionary:dict] retain];
+    allShiftActions = [NSDictionary dictionaryWithDictionary:dict];
 }
 
 - (void)handleShowPreferencesRequest_:(NSNotification *)notification {
@@ -476,7 +458,7 @@ NSDictionary *allShiftActions = nil;
     ShiftItAction *action = [allShiftActions objectForKey:identifier];
     FMTAssertNotNil(action);
 
-    FMTHotKey *newHotKey = [[[FMTHotKey alloc] initWithKeyCode:keyCode modifiers:modifiers] autorelease];
+    FMTHotKey *newHotKey = [[FMTHotKey alloc] initWithKeyCode:keyCode modifiers:modifiers];
 
     FMTHotKey *hotKey = [allHotKeys_ objectForKey:identifier];
     if (hotKey) {

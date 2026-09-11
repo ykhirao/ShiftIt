@@ -30,7 +30,7 @@ NSString *const kActionIdentifierKey = @"kActionIdentifierKey";
 NSString *const kHotKeyKeyCodeKey = @"kHotKeyKeyCodeKey";
 NSString *const kHotKeyModifiersKey = @"kHotKeyModifiersKey";
 
-NSString *const kShiftItGithubIssueURL = @"https://github.com/fikovnik/ShiftIt/issues";
+NSString *const kShiftItGithubIssueURL = @"https://github.com/ykhirao/ShiftIt/issues";
 
 NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 
@@ -62,7 +62,10 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 - (void)awakeFromNib {
     [tabView_ selectTabViewItemAtIndex:0];
 
-    NSString *versionString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSString *versionString = FMTStr(@"%@ (%@)",
+                                     [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"],
+                                     [bundle objectForInfoDictionaryKey:@"CFBundleVersion"]);
     [versionLabel_ setStringValue:versionString];
 
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -109,7 +112,7 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 }
 
 -(IBAction)reportIssue:(id)sender {
-    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    NSAlert *alert = [[NSAlert alloc] init];
     [alert setMessageText:NSLocalizedString(@"Before you report new issue", nil)];
     [alert setInformativeText:NSLocalizedString(@"Please make sure that you look at the other issues before you submit a new one.", nil)];
     [alert addButtonWithTitle:NSLocalizedString(@"Take me to github.com", nil)];
@@ -128,11 +131,9 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 
 - (IBAction)showMenuBarIconAction:(id)sender {
     if (![showMenuIcon state]) {
-        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-        [alert setMessageText:@"Disabling menu icon"];
-        [alert setInformativeText:@"You chose to disable the menu icon. This means that you won't be able to easily open the Preferences window in the future.\n"
-                   "\n"
-                   "To open the Preferences window, while the menu icon is hidden, just relaunch the application."];
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setMessageText:NSLocalizedString(@"Disabling menu icon", nil)];
+        [alert setInformativeText:NSLocalizedString(@"MENU_ICON_DISABLED_INFORMATIVE_TEXT", nil)];
 
         [alert runModal];
     }
@@ -242,7 +243,7 @@ static NSString *hotkeyIdentifiers[] = {
     ShiftItAction *action = [allShiftActions objectForKey:identifier];
     FMTAssertNotNil(action);
     if (tableColumn == hotkeyLabelColumn_) {
-        NSTextField* text = [[[NSTextField alloc] initWithFrame:tableView.frame] autorelease];
+        NSTextField* text = [[NSTextField alloc] initWithFrame:tableView.frame];
         text.alignment = NSTextAlignmentRight;
         text.drawsBackground = NO;
         text.stringValue = action.label;
@@ -251,7 +252,7 @@ static NSString *hotkeyIdentifiers[] = {
         return text;
     }
     if (tableColumn == hotkeyColumn_) {
-        SRRecorderControl* recorder = [[[SRRecorderControl alloc] initWithFrame:tableView.frame] autorelease];
+        SRRecorderControl* recorder = [[SRRecorderControl alloc] initWithFrame:tableView.frame];
         recorder.delegate = self;
         recorder.identifier = identifier;
         [self updateRecorderCombo:recorder forIdentifier:identifier];

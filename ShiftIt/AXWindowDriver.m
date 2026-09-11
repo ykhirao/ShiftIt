@@ -120,18 +120,15 @@ NSInteger const kAXWindowDriverErrorCode = 20104;
     }
 
     ref_ = CFRetain(ref);
-    driver_ = [driver retain];
+    driver_ = driver;
 
     return self;
 }
 
 - (void)dealloc {
     [driver_ freeWindow_:ref_];
-    [driver_ release];
 
     CFRelease(ref_);
-
-    [super dealloc];
 }
 
 - (BOOL)getGeometry:(NSRect *)geometry screen:(SIScreen **)screen error:(NSError **)error {
@@ -247,8 +244,6 @@ NSInteger const kAXWindowDriverErrorCode = 20104;
 
 - (void)dealloc {
     CFRelease(systemElementRef_);
-    
-    [super dealloc];
 }
 
 - (BOOL)findFocusedWindow:(id <SIWindow> *)window withInfo:(SIWindowInfo *)windowInfo error:(NSError **)error {
@@ -269,7 +264,7 @@ NSInteger const kAXWindowDriverErrorCode = 20104;
         return NO;
     }
 
-    *window = [[[AXWindow alloc] initWithRef:windowRef driver:self] autorelease];
+    *window = [[AXWindow alloc] initWithRef:windowRef driver:self];
 
     CFRelease(appRef);
     return YES;
@@ -311,7 +306,7 @@ NSInteger const kAXWindowDriverErrorCode = 20104;
                                              (CFStringRef) buttonName,
                                              (CFTypeRef *) &button)) != kAXErrorSuccess) {
 
-        *error = AX_COPY_ATTR_ERROR((NSString *) buttonName, ret);
+        *error = AX_COPY_ATTR_ERROR(buttonName, ret);
         return NO;
     }
 
@@ -356,7 +351,7 @@ NSInteger const kAXWindowDriverErrorCode = 20104;
     AXError ret = 0;
 
     if ((ret = AXUIElementIsAttributeSettable(element, (CFStringRef) attributeName, &isSettable)) != kAXErrorSuccess) {
-        *error = AX_IS_ATTR_SETTABLE_ERROR((NSString *) attributeName, ret);
+        *error = AX_IS_ATTR_SETTABLE_ERROR(attributeName, ret);
         return NO;
     }
 
@@ -425,34 +420,38 @@ NSInteger const kAXWindowDriverErrorCode = 20104;
     FMTAssert(kv > 0, @"kh must be greater than 0");
     FMTAssertNotNil(error);
 
-    NSArray *children = nil;
+    CFArrayRef childrenRef = NULL;
     AXError ret = 0;
 
     if ((ret = AXUIElementCopyAttributeValue(windowRef, kAXChildrenAttribute,
-                                             (CFTypeRef *) &children)) != kAXErrorSuccess) {
+                                             (CFTypeRef *) &childrenRef)) != kAXErrorSuccess) {
         *error = AX_COPY_ATTR_ERROR(kAXChildrenAttribute, ret);
         return NO;
     }
+
+    NSArray *children = CFBridgingRelease(childrenRef);
 
     NSRect r; // for the loop
     NSError *cause = nil;
 
     for (id child in children) {
-        NSString *role = nil;
+        CFTypeRef roleRef = NULL;
 
-        if ((ret = AXUIElementCopyAttributeValue((AXUIElementRef) child, kAXRoleAttribute,
-                                                 (CFTypeRef *) &role)) != kAXErrorSuccess) {
+        if ((ret = AXUIElementCopyAttributeValue((__bridge AXUIElementRef) child, kAXRoleAttribute,
+                                                 &roleRef)) != kAXErrorSuccess) {
 
             *error = AX_COPY_ATTR_ERROR(kAXRoleAttribute, ret);
             return NO;
         }
 
+        NSString *role = CFBridgingRelease(roleRef);
+
         if ([role isEqualToString:NSAccessibilityDrawerRole]) {
-            if (![AXWindowDriver getOrigin_:&(r.origin) ofElement:(AXUIElementRef) child error:&cause]) {
+            if (![AXWindowDriver getOrigin_:&(r.origin) ofElement:(__bridge AXUIElementRef) child error:&cause]) {
                 *error = SICreateErrorWithCause(kWindowManagerFailureErrorCode, cause, @"AXError: Unable to get position of a window drawer");
                 return NO;
             }
-            if (![AXWindowDriver getSize_:&(r.size) ofElement:(AXUIElementRef) child error:&cause]) {
+            if (![AXWindowDriver getSize_:&(r.size) ofElement:(__bridge AXUIElementRef) child error:&cause]) {
                 *error = SICreateErrorWithCause(kWindowManagerFailureErrorCode, cause, @"AXError: Unable to get size of a window drawer");
                 return NO;
             }
@@ -463,17 +462,15 @@ NSInteger const kAXWindowDriverErrorCode = 20104;
             };
 
             // only size can be changed with drawers
-            if (![AXWindowDriver setSize_:nr.size ofElement:(AXUIElementRef) child error:&cause]) {
+            if (![AXWindowDriver setSize_:nr.size ofElement:(__bridge AXUIElementRef) child error:&cause]) {
                 FMTLogDebug(@"Unable to set size of a drawer");
                 //*error = SICreateErrorWithCause(kWindowManagerFailureErrorCode, cause, @"AXError: Unable to set size of a window drawer");
                 //return NO;
             }            
         }
 
-        CFRelease((CFTypeRef) role);
     }
 
-    [children release];
     return YES;
 }
 
@@ -482,38 +479,42 @@ NSInteger const kAXWindowDriverErrorCode = 20104;
     FMTAssertNotNil(geometry);
     FMTAssertNotNil(error);
 
-    NSArray *children = nil;
+    CFArrayRef childrenRef = NULL;
     AXError ret = 0;
 
     // by default there are none
     *geometry = NSMakeRect(0, 0, 0, 0);
 
     if ((ret = AXUIElementCopyAttributeValue(windowRef, kAXChildrenAttribute,
-                                             (CFTypeRef *) &children)) != kAXErrorSuccess) {
+                                             (CFTypeRef *) &childrenRef)) != kAXErrorSuccess) {
         *error = AX_COPY_ATTR_ERROR(kAXChildrenAttribute, ret);
         return NO;
     }
+
+    NSArray *children = CFBridgingRelease(childrenRef);
 
     NSRect r; // for the loop
     BOOL first = YES;
     NSError *cause = nil;
 
     for (id child in children) {
-        NSString *role = nil;
+        CFTypeRef roleRef = NULL;
 
-        if ((ret = AXUIElementCopyAttributeValue((AXUIElementRef) child, kAXRoleAttribute,
-                                                 (CFTypeRef *) &role)) != kAXErrorSuccess) {
+        if ((ret = AXUIElementCopyAttributeValue((__bridge AXUIElementRef) child, kAXRoleAttribute,
+                                                 &roleRef)) != kAXErrorSuccess) {
 
             *error = AX_COPY_ATTR_ERROR(kAXRoleAttribute, ret);
             return NO;
         }
 
+        NSString *role = CFBridgingRelease(roleRef);
+
         if ([role isEqualToString:NSAccessibilityDrawerRole]) {
-            if (![AXWindowDriver getOrigin_:&(r.origin) ofElement:(AXUIElementRef) child error:&cause]) {
+            if (![AXWindowDriver getOrigin_:&(r.origin) ofElement:(__bridge AXUIElementRef) child error:&cause]) {
                 *error = SICreateErrorWithCause(kWindowManagerFailureErrorCode, cause, @"AXError: Unable to position of a window drawer");
                 return NO;
             }
-            if (![AXWindowDriver getSize_:&(r.size) ofElement:(AXUIElementRef) child error:&cause]) {
+            if (![AXWindowDriver getSize_:&(r.size) ofElement:(__bridge AXUIElementRef) child error:&cause]) {
                 *error = SICreateErrorWithCause(kWindowManagerFailureErrorCode, cause, @"AXError: Unable to size of a window drawer");
                 return NO;
             }
@@ -526,10 +527,8 @@ NSInteger const kAXWindowDriverErrorCode = 20104;
             }
         }
 
-        CFRelease((CFTypeRef) role);
     }
 
-    [children release];
     return YES;
 }
 
@@ -747,7 +746,7 @@ NSInteger const kAXWindowDriverErrorCode = 20104;
         }
 
         // TODO: extract and turn into a semaphore
-        [NSThread sleepForTimeInterval:delayBetweenOperations_];
+        [NSThread sleepForTimeInterval:self->delayBetweenOperations_];
 
         // see what has happened
         if (![self getGeometry_:nil screen:nil windowRect:&currentGeometry
@@ -786,7 +785,7 @@ NSInteger const kAXWindowDriverErrorCode = 20104;
         }
 
         // TODO: extract and turn into a semaphore
-        [NSThread sleepForTimeInterval:delayBetweenOperations_];
+        [NSThread sleepForTimeInterval:self->delayBetweenOperations_];
 
         // see what has happened
         if (![self getGeometry_:nil screen:nil windowRect:&currentGeometry

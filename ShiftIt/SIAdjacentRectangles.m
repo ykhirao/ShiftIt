@@ -34,18 +34,13 @@
     }
 
     rect_ = rect;
-    value_ = [value retain];
+    value_ = value;
 
     return self;
 }
 
-- (void)dealloc {
-    [value_ release];
-    [super dealloc];
-}
-
 + (id)rect:(NSRect)rect withValue:(id)value {
-    return [[[SIValueRect alloc] initWithRect:rect value:value] autorelease];
+    return [[SIValueRect alloc] initWithRect:rect value:value];
 }
 
 
@@ -69,14 +64,9 @@
 
     distance_ = distance;
     rect_ = rect;
-    value_ = [value retain];
+    value_ = value;
 
     return self;
-}
-
-- (void)dealloc {
-    [value_ release];
-    [super dealloc];
 }
 
 @end
@@ -92,16 +82,11 @@
     }
 
     FMTAssertNotNil(rectValues);
-    rectValues_ = [rectValues retain];
+    rectValues_ = rectValues;
 
     return self;
 }
 
-- (void)dealloc {
-    [rectValues_ release];
-
-    [super dealloc];
-}
 
 - (NSArray *)rectanglesInDirection:(FMTDirection)direction fromRect:(NSRect)rect {
     NSMutableArray *res = [NSMutableArray array];
@@ -144,7 +129,7 @@
             }
 
             CGFloat dist = FMTPointDistanceToLine(a, b, p);
-            [res addObject:[[[SIDistanceValueRect alloc] initWithDistance:dist rect:cRect value:[(SIValueRect *)obj value]] autorelease]];
+            [res addObject:[[SIDistanceValueRect alloc] initWithDistance:dist rect:cRect value:[(SIValueRect *)obj value]]];
         }
     }];
 
@@ -197,7 +182,7 @@
 
 
 + (id)adjacentRect:(NSArray *)rectValues {
-    return [[[SIAdjacentRectangles alloc] initWithRectValues:rectValues] autorelease];
+    return [[SIAdjacentRectangles alloc] initWithRectValues:rectValues];
 }
 
 @end

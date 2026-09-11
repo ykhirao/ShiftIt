@@ -21,7 +21,7 @@
 
 - **最低対応 OS は macOS 13。** ログイン項目の API（`SMAppService`）が 13 からなので、それ未満は切り捨てる。
 - **CPU は arm64 だけ**を作る（Apple Silicon 専用。x86_64 は作らない）。
-- **メモリ管理は ARC に移す。** 今のコードは手動参照カウント（MRC）で、`retain` / `release` / `autorelease` を書いている。
+- **メモリ管理は ARC。** 例外は外から持ち込んだ `GTM/GTMLogger.m` だけで、`project.yml` で `-fno-objc-arc` を付けて MRC のままコンパイルしている。
 - **依存ライブラリは Swift Package Manager で入れる。** ビルド済みの `.framework` をリポジトリに置くのはやめる。
 - **X11（XQuartz）対応はやめる。** X11 まわりのコードは削除してよい。
 - **Xcode プロジェクトは XcodeGen の `project.yml` で管理する。** 設定を変えるときは `project.yml` を直し、生成された `ShiftItNeo.xcodeproj` を直接いじらない。
@@ -38,7 +38,8 @@
 | `ShiftIt/FMT/` | 汎用ユーティリティ（ホットキー登録、ログイン項目など） |
 | `ShiftIt/GTM/` | Google Toolbox for Mac の一部（ログ出力） |
 | `ShiftIt/Base.lproj/`, `ShiftIt/ja.lproj/` | 画面（xib）と文言。英語と日本語 |
-| `ShiftIt/ShiftIt Tests/`, `ShiftIt/FMT Tests/` | テスト（OCUnit。今の Xcode では動かない） |
+| `Tests/` | 単体テスト（XCTest）。ターゲットは `ShiftItNeoTests` |
+| `scripts/` | 開発用のスクリプト |
 
 依存ライブラリは [ShortcutRecorder](https://github.com/Kentzo/ShortcutRecorder) 3.4.0（ショートカットの記録欄）だけ。Swift Package Manager で入れていて、バージョンは `project.yml` の `packages` で指定している。
 
@@ -52,7 +53,7 @@
 
 ## コードの書き方
 
-- Objective-C。新しく書くコードは今の書き方（ARC、プロパティ、nullability 注釈、モダンな構文）で書く。
+- Objective-C（ARC）。新しく書くコードは今の書き方（プロパティ、nullability 注釈、モダンな構文）で書く。CoreFoundation の型と行き来するときは `__bridge` / `CFBridgingRelease` で所有権をはっきりさせる。
 - クラス名の接頭辞は `SI`（ShiftIt 本体）と `FMT`（ユーティリティ）。
 - 新しいファイルには GPLv3 のライセンス表記を付ける（フォーク元のライセンスを引き継ぐため）。
 - 画面の文言を変えたら、`Base.lproj` と `ja.lproj` の両方を直す。
@@ -60,8 +61,10 @@
 ## ビルドと動作確認
 
 - 開発機に Xcode はない（Command Line Tools のみ）。**ビルドは GitHub Actions の macOS ランナーで行う。** 公開リポジトリなので無料。
-  - 設定は `.github/workflows/build.yml`。`main` / `develop` への push と PR で動く。できたアプリ（`ShiftItNeo.zip`）とビルドログは、実行結果の Artifacts からダウンロードできる。
+  - 設定は `.github/workflows/build.yml`。`main` / `develop` への push と PR で、ビルドと単体テストが動く。できたアプリ（`ShiftItNeo.zip`）とビルドログは、実行結果の Artifacts からダウンロードできる。
   - 結果の確認：`gh run list --branch develop`、`gh run view <ID> --log-failed`
+- 単体テスト（`Tests/`）は XCTest が要るので CI でしか動かせない。テストはアプリを起動しない形にしていて、テスト対象のソースを `project.yml` の `ShiftItNeoTests` に直接入れている。テストで使うソースを増やしたら、そこにも足す。
+- `scripts/check-syntax.sh` で、Xcode がなくても全ソースの構文チェック（コンパイルエラーと警告の確認）ができる。数秒で終わるので、push する前に必ず通す。
 - Xcode プロジェクトの生成は Xcode がなくてもできる（`project.yml` を直したら、生成して中身を確かめられる）：
 
   ```sh
@@ -76,6 +79,7 @@
     xcodebuild -project ShiftItNeo.xcodeproj -scheme ShiftItNeo -configuration Release build
   ```
 
+- リリース：`project.yml` の `MARKETING_VERSION` を上げて `develop` → `main` にマージし、`main` に同じ番号のタグ（例：`v2.0.1`）を push する。CI がタグとアプリのバージョンの一致を確かめてから、`ShiftItNeo-<version>.zip` を GitHub Releases に公開する。リリースノートの冒頭（インストール手順）は `.github/release-notes.md`。ビルド番号（`CFBundleVersion`）は CI の実行番号になる。
 - ウィンドウを動かすには「アクセシビリティ」の許可が要るので、動作確認は CI ではできない。CI でできたアプリを実機に入れて確かめる。
 - アクセシビリティの許可はコード署名に紐づく。CI では GitHub Secrets の自己署名証明書（`SIGNING_CERT_P12`、`SIGNING_CERT_PASSWORD`）で署名し直すので、ビルドが変わっても許可は引き継がれる。証明書が登録されていない環境（フォークからの PR など）では仮の署名（ad-hoc）になり、入れ替えるたびに許可を付け直すことになる。
 - 証明書の秘密鍵は GitHub Secrets にしか置いていない（取り出せない）。作り直すと、利用者は一度だけ許可を付け直すことになる。
@@ -91,13 +95,13 @@
 - [x] **X11 対応のコードを削除する**。
 - [x] **廃止された API を置き換える**：
   - ガベージコレクション、ログイン項目（`LSSharedFileList` → `SMAppService`）、警告ダイアログ（`NSRunAlertPanel` → `NSAlert`）、「システム環境設定」の操作（ScriptingBridge → URL で「システム設定」を開く）
-- [ ] **ARC に移す**。
-- [ ] **テストを XCTest に移す**：OCUnit（SenTestingKit）は今の Xcode から削除されている。`project.yml` にテストのターゲットを足す。
+- [x] **ARC に移す**。
+- [x] **テストを XCTest に移す**。
 - [x] **署名**：自己署名証明書を GitHub Secrets に登録して CI で署名する。
 - [x] **コンパイラの警告をなくす**（ShortcutRecorder 側の警告は除く）。
 - [x] **実機で動作を確かめる**：2026-09-12 に Apple Silicon の Mac（macOS 26.6）で、CI でビルドした ShiftItNeo が動くことを確認した。
 - [x] **古いファイルを掃除し、README をこのフォーク向けに書き直す**。
-- [ ] **配布を GitHub Releases にする**：今は Actions の成果物から取ってもらっている（保存期間は 90 日）。
+- [x] **配布を GitHub Releases にする**：`v*` のタグを push すると CI が Releases に公開する。
 
 ## コミットと PR
 

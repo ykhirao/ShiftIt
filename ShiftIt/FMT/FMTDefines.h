@@ -46,7 +46,7 @@ static inline NSString* FMTStr(NSString *fmt, ...) {
     va_list args;
 
     va_start(args, fmt);
-	s = [[[NSString alloc] initWithFormat:fmt arguments:args] autorelease];
+	s = [[NSString alloc] initWithFormat:fmt arguments:args];
     va_end(args);
 
     return s;
@@ -87,18 +87,12 @@ static inline void FMTInDebugOnly(FMTDebugBlock block) {
   #define FMTAssertNotNil(var) FMTAssert(var != nil, @"Variable %@ must not be nil", @#var);
 #endif // FMTAssertNotNil
 
-/// This macro implements the various methods needed to make a safe singleton.
-///
-/// This Singleton pattern was taken from:
-/// http://developer.apple.com/documentation/Cocoa/Conceptual/CocoaFundamentals/CocoaObjects/chapter_3_section_10.html
+/// Implements a class method returning the shared instance created on first use.
 ///
 /// Sample usage:
 ///
 /// SINGLETON_BOILERPLATE(SomeUsefulManager, sharedSomeUsefulManager)
 /// (with no trailing semicolon)
-///
-/// This code here is based on Foundation/GTMObjectSingleton.h from google-toolbox-for-mac
-///
 
 #ifndef SINGLETON_BOILERPLATE
 
@@ -109,41 +103,13 @@ static inline void FMTInDebugOnly(FMTDebugBlock block) {
 #ifndef SINGLETON_BOILERPLATE_FULL
 
 #define SINGLETON_BOILERPLATE_FULL(_object_name_, _shared_obj_name_, _init_) \
-static _object_name_ *z##_shared_obj_name_ = nil;  \
 + (_object_name_ *)_shared_obj_name_ {             \
-@synchronized(self) {                            \
-if (z##_shared_obj_name_ == nil) {             \
-/* Note that 'self' may not be the same as _object_name_ */                               \
-/* first assignment done in allocWithZone but we must reassign in case init fails */      \
-z##_shared_obj_name_ = [[self alloc] _init_];                                               \
-FMTAssert((z##_shared_obj_name_ != nil), @"didn't catch singleton allocation");       \
-}                                              \
-}                                                \
-return z##_shared_obj_name_;                     \
-}                                                  \
-+ (id)allocWithZone:(NSZone *)zone {               \
-@synchronized(self) {                            \
-if (z##_shared_obj_name_ == nil) {             \
-z##_shared_obj_name_ = [super allocWithZone:zone]; \
-return z##_shared_obj_name_;                 \
-}                                              \
-}                                                \
-\
-/* We can't return the shared instance, because it's been init'd */ \
-FMTAssert(NO, @"use the singleton API, not alloc+init");        \
-return nil;                                      \
-}                                                  \
-- (id)retain {                                     \
-return self;                                     \
-}                                                  \
-- (NSUInteger)retainCount {                        \
-return NSUIntegerMax;                            \
-}                                                  \
-- (id)autorelease {                                \
-return self;                                     \
-}                                                  \
-- (id)copyWithZone:(NSZone *) __unused zone { \
-return self;                                     \
-}                                                  \
+    static _object_name_ *shared = nil;            \
+    static dispatch_once_t onceToken;              \
+    dispatch_once(&onceToken, ^{                   \
+        shared = [[self alloc] _init_];            \
+    });                                            \
+    return shared;                                 \
+}
 
 #endif // SINGLETON_BOILERPLATE_FULL

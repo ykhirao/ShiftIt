@@ -37,11 +37,7 @@
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:format];
 
-    NSString *string = [dateFormatter stringFromDate:self];
-    
-    [dateFormatter release];
-    
-    return string;
+    return [dateFormatter stringFromDate:self];
 }
 
 @end

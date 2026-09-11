@@ -61,11 +61,11 @@ NSInteger const kShiftItManagerFailureErrorCode = 2014;
     FMTAssertNotNil(windowInfo);
     
     NSRect rect;
-    CGRectMakeWithDictionaryRepresentation((CFDictionaryRef)[windowInfo objectForKey:(id)kCGWindowBounds], 
+    CGRectMakeWithDictionaryRepresentation((__bridge CFDictionaryRef)[windowInfo objectForKey:(__bridge id)kCGWindowBounds], 
                                            (struct CGRect *)&rect);
     
-    return [[SIWindowInfo alloc] initWithPid:[[windowInfo objectForKey:(id)kCGWindowOwnerPID] intValue]
-                                         wid:[[windowInfo objectForKey:(id)kCGWindowNumber] intValue]
+    return [[SIWindowInfo alloc] initWithPid:[[windowInfo objectForKey:(__bridge id)kCGWindowOwnerPID] intValue]
+                                         wid:[[windowInfo objectForKey:(__bridge id)kCGWindowNumber] intValue]
                                         rect:rect];
 }
 
@@ -99,7 +99,7 @@ NSInteger const kShiftItManagerFailureErrorCode = 2014;
         return nil;
     }
     
-    drivers_ = [drivers retain];
+    drivers_ = drivers;
     windows_ = [[NSMutableArray alloc] init];
     menuBarHeight_ = GetMBarHeight();
 
@@ -116,24 +116,13 @@ NSInteger const kShiftItManagerFailureErrorCode = 2014;
     return self;
 }
 
-- (void) dealloc {
-    for (id<SIWindow> window in windows_) {
-        [window release];
-    }
-    
-    [windows_ release];
-    [drivers_ release];
-    
-    [super dealloc];
-}
-
 - (BOOL) getFocusedWindow:(id<SIWindow> *)window error:(NSError **)error {
     // get all windows order front to back
-    NSArray *allWindowsInfoList = (NSArray *) CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly + kCGWindowListExcludeDesktopElements, 
-                                                                      kCGNullWindowID);
+    NSArray *allWindowsInfoList = CFBridgingRelease(CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly + kCGWindowListExcludeDesktopElements,
+                                                                               kCGNullWindowID));
     // filter only real windows - layer 0
     NSArray *windowInfoList = [allWindowsInfoList filter:^BOOL(NSDictionary *item) {
-        return [[item objectForKey:(id)kCGWindowLayer] integerValue] == 0;
+        return [[item objectForKey:(__bridge id)kCGWindowLayer] integerValue] == 0;
     }];
     
     // get the first one - the front most window
@@ -150,10 +139,12 @@ NSInteger const kShiftItManagerFailureErrorCode = 2014;
     __block id<SIWindow> w = nil;
     [drivers_ foreachWithStop:^BOOL(id <SIWindowDriver> driver) {
         NSError *problem = nil;
-        if (![driver findFocusedWindow:&w withInfo:frontWindowInfo error:&problem]) {
+        id<SIWindow> found = nil;
+        if (![driver findFocusedWindow:&found withInfo:frontWindowInfo error:&problem]) {
             FMTLogDebug(@"Driver %@ did not locate window: %@", [driver description], [problem fullDescription]);
             return YES; /// continue
         } else {
+            w = found;
             return NO;
         }
     }];
@@ -165,10 +156,8 @@ NSInteger const kShiftItManagerFailureErrorCode = 2014;
         FMTLogDebug(@"Driver mapped window: %@", [w description]);
     }
     
-    [allWindowsInfoList release];
-    
     *window = w;
-    [windows_ addObject:[*window retain]];
+    [windows_ addObject:w];
     
     return YES;
 }
@@ -276,21 +265,15 @@ NSInteger const kShiftItManagerFailureErrorCode = 2014;
 		return nil;
 	}
     
-    drivers_ = [drivers retain];
+    drivers_ = drivers;
     
 	return self;
-}
-
-- (void) dealloc {	
-    [drivers_ release];
-    
-	[super dealloc];
 }
 
 - (BOOL) executeAction:(id<SIActionDelegate>)action error:(NSError **)error {
 	FMTAssertNotNil(action);
 
-    DefaultWindowContext *ctx = [[[DefaultWindowContext alloc] initWithDrivers:drivers_] autorelease];
+    DefaultWindowContext *ctx = [[DefaultWindowContext alloc] initWithDrivers:drivers_];
     
     // TODO: in try catch
     if (![action execute:ctx error:error]) {        
