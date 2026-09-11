@@ -8,12 +8,6 @@
 /* Class = "NSButtonCell"; title = "Open At Login"; ObjectID = "63"; */
 "63.title" = "ログイン時に開く";
 
-/* Class = "NSButtonCell"; title = "Automatically Check For Updates"; ObjectID = "65"; */
-"65.title" = "アップデートを自動的に確認";
-
-/* Class = "NSButtonCell"; title = "Check For Updates Now"; ObjectID = "67"; */
-"67.title" = "アップデートを確認...";
-
 /* Class = "NSButtonCell"; title = "Show Icon In Menu Bar"; ObjectID = "257"; */
 "257.title" = "メニューバーにアイコンを表示";
 

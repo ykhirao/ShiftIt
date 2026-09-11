@@ -3,6 +3,3 @@
 
 /* Class = "NSMenuItem"; title = "Preferences"; ObjectID = "558"; */
 "558.title" = "環境設定...";
-
-/* Class = "NSMenuItem"; title = "Check for Updates"; ObjectID = "761"; */
-"761.title" = "アップデートの確認...";

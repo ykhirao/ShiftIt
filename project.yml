@@ -36,14 +36,11 @@ targets:
           - "*.framework"
           - "FMT/Readme.md"
           - "ShiftIt-Info.plist"
-          - "dsa_pub.pem"
     dependencies:
       - sdk: Carbon.framework
       - sdk: Cocoa.framework
       - sdk: ScriptingBridge.framework
       - framework: ShiftIt/ShortcutRecorder.framework
-        embed: true
-      - framework: ShiftIt/Sparkle.framework
         embed: true
     settings:
       base:
