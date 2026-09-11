@@ -187,19 +187,19 @@ NSDictionary *allShiftActions = nil;
     FMTLogInfo(@"First run");
     // ask to start it automatically - make sure it is not there
 
-    // TODO: refactor this so it shares the code from the pref controller
-    FMTLoginItems *loginItems = [FMTLoginItems sharedSessionLoginItems];
-    NSString *appPath = [[NSBundle mainBundle] bundlePath];
-
-    if (![loginItems isInLoginItemsApplicationWithPath:appPath]) {
+    if (!FMTIsLoginItemEnabled()) {
         NSInteger ret = NSRunAlertPanel(NSLocalizedString(@"Start ShiftIt automatically?", nil),
                                         NSLocalizedString(@"Would you like to have ShiftIt automatically started at a login time?", nil),
                                         NSLocalizedString(@"Yes", nil), NSLocalizedString(@"No", nil), NULL);
         switch (ret) {
             case NSAlertDefaultReturn:
-                // do it!
-                [loginItems toggleApplicationInLoginItemsWithPath:appPath enabled:YES];
+            {
+                NSError *error = nil;
+                if (!FMTSetLoginItemEnabled(YES, &error)) {
+                    FMTLogError(@"Unable to add ShiftIt to the login items: %@", [error localizedDescription]);
+                }
                 break;
+            }
             default:
                 break;
         }

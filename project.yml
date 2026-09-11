@@ -43,6 +43,7 @@ targets:
       - sdk: Carbon.framework
       - sdk: Cocoa.framework
       - sdk: ScriptingBridge.framework
+      - sdk: ServiceManagement.framework
       - package: ShortcutRecorder
     settings:
       base:

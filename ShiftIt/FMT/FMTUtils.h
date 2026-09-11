@@ -28,7 +28,9 @@ NSString *FMTGetMainBundleResourcePath(NSString *resourceName, NSString *resourc
 NSURL *FMTGetBundleResourceURL(NSBundle *bundle, NSString *resourceName, NSString *resourceType);
 NSURL *FMTGetMainBundleResourceURL(NSString *resourceName, NSString *resourceType);
 
-BOOL FMTOpenSystemPreferencePane(NSString *prefPaneId);
+// Whether the app is registered to open at login (SMAppService, macOS 13+)
+BOOL FMTIsLoginItemEnabled(void);
+BOOL FMTSetLoginItemEnabled(BOOL enabled, NSError **error);
 
 BOOL FMTIsProcessWithBundleIdRunning(NSString *bundleId);
 

@@ -170,15 +170,16 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 #pragma mark shouldStartAtLogin dynamic property methods
 
 - (BOOL)shouldStartAtLogin {
-    NSString *path = [[NSBundle mainBundle] bundlePath];
-    return [[FMTLoginItems sharedSessionLoginItems] isInLoginItemsApplicationWithPath:path];
+    return FMTIsLoginItemEnabled();
 }
 
 - (void)setShouldStartAtLogin:(BOOL)flag {
     FMTLogDebug(@"ShiftIt should start at login: %d", flag);
 
-    NSString *path = [[NSBundle mainBundle] bundlePath];
-    [[FMTLoginItems sharedSessionLoginItems] toggleApplicationInLoginItemsWithPath:path enabled:flag];
+    NSError *error = nil;
+    if (!FMTSetLoginItemEnabled(flag, &error)) {
+        FMTLogError(@"Unable to change the login item: %@", [error localizedDescription]);
+    }
 }
 
 #pragma mark Shortcut Recorder methods

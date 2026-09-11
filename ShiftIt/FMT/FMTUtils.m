@@ -20,6 +20,8 @@
  THE SOFTWARE.
  */
 
+#import <ServiceManagement/ServiceManagement.h>
+
 #import "FMTUtils.h"
 #import "FMTDefines.h"
 #import "GTMLogger.h"
@@ -55,6 +57,20 @@ NSURL *FMTGetBundleResourceURL(NSBundle *bundle, NSString *resourceName, NSStrin
 
 NSURL *FMTGetMainBundleResourceURL(NSString *resourceName, NSString *resourceType) {	
 	return FMTGetBundleResourceURL([NSBundle mainBundle], resourceName, resourceType);
+}
+
+BOOL FMTIsLoginItemEnabled(void) {
+	return [SMAppService mainAppService].status == SMAppServiceStatusEnabled;
+}
+
+BOOL FMTSetLoginItemEnabled(BOOL enabled, NSError **error) {
+	SMAppService *service = [SMAppService mainAppService];
+
+	if (enabled) {
+		return [service registerAndReturnError:error];
+	} else {
+		return [service unregisterAndReturnError:error];
+	}
 }
 
 BOOL FMTOpenSystemPreferencePane(NSString *prefPaneId) {
