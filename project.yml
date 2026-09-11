@@ -1,0 +1,60 @@
+# Xcode プロジェクトの定義。ShiftIt.xcodeproj はここから XcodeGen で生成する（リポジトリには入れない）。
+#   brew install xcodegen && xcodegen generate
+name: ShiftIt
+
+options:
+  bundleIdPrefix: org.shiftitapp
+  deploymentTarget:
+    macOS: "13.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+
+settings:
+  base:
+    ARCHS: arm64
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    # ARC への移行が済むまでは手動参照カウント（MRC）のまま
+    CLANG_ENABLE_OBJC_ARC: NO
+    GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS: YES
+    GCC_TREAT_INCOMPATIBLE_POINTER_TYPE_WARNINGS_AS_ERRORS: YES
+  configs:
+    Release:
+      GCC_PREPROCESSOR_DEFINITIONS: ["NDEBUG=1", "$(inherited)"]
+
+targets:
+  ShiftIt:
+    type: application
+    platform: macOS
+    scheme: {}
+    sources:
+      - path: ShiftIt
+        excludes:
+          - "ShiftIt Tests"
+          - "FMT Tests"
+          - "GHUnitTestMain.m"
+          - "X11WindowDriver.*"
+          - "*.framework"
+          - "FMT/Readme.md"
+          - "ShiftIt-Info.plist"
+          - "dsa_pub.pem"
+    dependencies:
+      - sdk: Carbon.framework
+      - sdk: Cocoa.framework
+      - sdk: ScriptingBridge.framework
+      - framework: ShiftIt/ShortcutRecorder.framework
+        embed: true
+      - framework: ShiftIt/Sparkle.framework
+        embed: true
+    settings:
+      base:
+        PRODUCT_NAME: ShiftIt
+        PRODUCT_BUNDLE_IDENTIFIER: org.shiftitapp.ShiftIt
+        INFOPLIST_FILE: ShiftIt/ShiftIt-Info.plist
+        GCC_PREFIX_HEADER: ShiftIt/ShiftIt_Prefix.pch
+        GCC_PRECOMPILE_PREFIX_HEADER: YES
+        FRAMEWORK_SEARCH_PATHS: ["$(inherited)", "$(PROJECT_DIR)/ShiftIt"]
+        COMBINE_HIDPI_IMAGES: YES
+        # 仮の署名（ad-hoc）。Apple Silicon では署名のないアプリは起動できない
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: ""

@@ -22,7 +22,8 @@
 - **CPU は arm64 だけ**を作る（Apple Silicon 専用。x86_64 は作らない）。
 - **メモリ管理は ARC に移す。** 今のコードは手動参照カウント（MRC）で、`retain` / `release` / `autorelease` を書いている。
 - **依存ライブラリは Swift Package Manager で入れる。** ビルド済みの `.framework` をリポジトリに置くのはやめる。
-- **X11（XQuartz）対応はやめる。** `ShiftIt NoX11` ターゲットを残し、X11 まわりのコードとターゲットは削除してよい。
+- **X11（XQuartz）対応はやめる。** X11 まわりのコードは削除してよい。
+- **Xcode プロジェクトは XcodeGen の `project.yml` で管理する。** 設定を変えるときは `project.yml` を直し、生成された `ShiftIt.xcodeproj` を直接いじらない。
 - 使われていない仕組みは削除してよい：本家のリリース用ファイル（`release/`、`fabfile.py`、`Pipfile*`）、旧 CI（`.travis.yml`）、`GTM/`（Google Toolbox for Mac の一部）など。
 - Swift への書き換えは、Apple Silicon で動くようになってから検討する。まずは Objective-C のまま動かす。
 - Xcode の警告は放置しない。今の Xcode が勧めるプロジェクト設定に更新する。
@@ -31,7 +32,7 @@
 
 | パス | 中身 |
 |---|---|
-| `ShiftIt/ShiftIt.xcodeproj` | Xcode プロジェクト。形式は Xcode 6.3（2015 年）当時のまま |
+| `project.yml` | Xcode プロジェクトの定義（XcodeGen）。`ShiftIt.xcodeproj` はここから生成し、リポジトリには入れない |
 | `ShiftIt/*.m`, `*.h` | アプリ本体 |
 | `ShiftIt/FMT/` | 汎用ユーティリティ（ホットキー登録、ログイン項目など） |
 | `ShiftIt/GTM/` | Google Toolbox for Mac の一部（ログ出力とガベージコレクション） |
@@ -59,11 +60,18 @@
 - 開発機に Xcode はない（Command Line Tools のみ）。**ビルドは GitHub Actions の macOS ランナーで行う。** 公開リポジトリなので無料。
   - 設定は `.github/workflows/build.yml`。`main` / `develop` への push と PR で動く。できたアプリ（`ShiftIt.zip`）とビルドログは、実行結果の Artifacts からダウンロードできる。
   - 結果の確認：`gh run list --branch develop`、`gh run view <ID> --log-failed`
+- Xcode プロジェクトの生成は Xcode がなくてもできる（`project.yml` を直したら、生成して中身を確かめられる）：
+
+  ```sh
+  brew install xcodegen
+  xcodegen generate
+  ```
+
 - Xcode がある環境なら、`xcode-select` を切り替えなくても次のように指定してビルドできる：
 
   ```sh
   DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
-    xcodebuild -project ShiftIt/ShiftIt.xcodeproj -scheme "ShiftIt NoX11" -configuration Release build
+    xcodebuild -project ShiftIt.xcodeproj -scheme ShiftIt -configuration Release build
   ```
 
 - ウィンドウを動かすには「アクセシビリティ」の許可が要るので、動作確認は CI ではできない。CI でできたアプリを実機に入れて確かめる。
@@ -73,17 +81,17 @@
 
 2026-09-12 時点。作業が進んだら更新してください。
 
-- [ ] **CI を作る**：GitHub Actions で `ShiftIt NoX11` をビルドし、できたアプリを成果物として残す。
+- [x] **CI を作る**：GitHub Actions でビルドし、できたアプリを成果物として残す。
+- [x] **Xcode プロジェクトを XcodeGen に移す**：最低対応 OS は macOS 13、CPU は arm64 だけ。
 - [ ] **Sparkle を削除する**：同梱の 1.5 Beta 6 は PowerPC・32bit Intel・64bit Intel 向けのみ。更新の確認先（`SUFeedURL`）は本家の appcast で、署名鍵も本家しか持っていないので、このフォークでは元々機能しない。自動アップデートが要るなら、あとで Sparkle 2 を入れ直す。
 - [ ] **ShortcutRecorder を 3.x に置き換える**（Swift Package Manager で入れる）：同梱版は Intel 向けのみ。関係するのは `FMT/FMTHotKey+SRKeyCombo.*`、`FMT/FMTHotKey.m`、`FMT/FMTHotKeyManager.m`、`PreferencesWindowController.*`、`Base.lproj/PreferencesWindow.xib`。
-- [ ] **ビルド設定を更新する**：最低対応 OS を macOS 13 に、CPU を arm64 だけにする。プロジェクト形式も今の Xcode に合わせる。
-- [ ] **X11 対応を削除する**：`X11WindowDriver.*` と `ShiftIt` ターゲット（X11 版）。
+- [ ] **X11 対応のコードを削除する**：`X11WindowDriver.*`、`#ifdef X11` の部分。
 - [ ] **廃止された API を置き換える**：
   - ガベージコレクション：`GTM/GTMGarbageCollection.h`（`NSGarbageCollector`）、`NSMakeCollectable`
   - ログイン項目：`FMT/FMTLoginItems.*`（`LSSharedFileList`）→ `SMAppService`
   - 警告ダイアログ：`NSRunAlertPanel` → `NSAlert`
 - [ ] **ARC に移す**。
-- [ ] **テストを XCTest に移す**：OCUnit（SenTestingKit）は今の Xcode から削除されている。
+- [ ] **テストを XCTest に移す**：OCUnit（SenTestingKit）は今の Xcode から削除されている。`project.yml` にテストのターゲットを足す。
 - [ ] **署名**：arm64 のバイナリは署名がないと動かない。ビルドのたびにアクセシビリティ許可が外れないよう、自己署名証明書を GitHub Secrets に登録して CI で署名する。
 - [ ] **古いファイルを掃除する**：`release/`、`fabfile.py`、`Pipfile*`、`.travis.yml`。README もこのフォーク向けに書き直す。
 
