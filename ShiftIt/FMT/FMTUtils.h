@@ -32,9 +32,5 @@ NSURL *FMTGetMainBundleResourceURL(NSString *resourceName, NSString *resourceTyp
 BOOL FMTIsLoginItemEnabled(void);
 BOOL FMTSetLoginItemEnabled(BOOL enabled, NSError **error);
 
-BOOL FMTIsProcessWithBundleIdRunning(NSString *bundleId);
-
-NSInteger FMTNumberOfRunningProcessesWithBundleId(NSString *bundleId);
-
 NSError* FMTCreateError(NSString *erroDomain, NSInteger errorCode, NSString *fmt, ...);
 NSError* FMTCreateErrorWithCause(NSString *errorDomain, NSInteger errorCode, NSError *cause, NSString *fmt, ...);
