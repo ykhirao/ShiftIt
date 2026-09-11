@@ -109,11 +109,12 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 }
 
 -(IBAction)reportIssue:(id)sender {
-    NSInteger ret = NSRunAlertPanel(NSLocalizedString(@"Before you report new issue", nil),
-            NSLocalizedString(@"Please make sure that you look at the other issues before you submit a new one.", nil),
-            NSLocalizedString(@"Take me to github.com", nil), NULL, NULL);
-    
-    if (ret == NSAlertDefaultReturn) {
+    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    [alert setMessageText:NSLocalizedString(@"Before you report new issue", nil)];
+    [alert setInformativeText:NSLocalizedString(@"Please make sure that you look at the other issues before you submit a new one.", nil)];
+    [alert addButtonWithTitle:NSLocalizedString(@"Take me to github.com", nil)];
+
+    if ([alert runModal] == NSAlertFirstButtonReturn) {
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:kShiftItGithubIssueURL]];
     }
 }
@@ -127,15 +128,12 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 
 - (IBAction)showMenuBarIconAction:(id)sender {
     if (![showMenuIcon state]) {
-        NSAlert *alert = [NSAlert
-                alertWithMessageText:@"Disabling menu icon"
-                       defaultButton:nil
-                     alternateButton:nil
-                         otherButton:nil
-           informativeTextWithFormat:@"You chose to disable the menu icon. This means that you won't be able to easily open the Preferences window in the future.\n"
+        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        [alert setMessageText:@"Disabling menu icon"];
+        [alert setInformativeText:@"You chose to disable the menu icon. This means that you won't be able to easily open the Preferences window in the future.\n"
                    "\n"
                    "To open the Preferences window, while the menu icon is hidden, just relaunch the application."];
-        
+
         [alert runModal];
     }
 }

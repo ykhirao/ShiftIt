@@ -190,20 +190,17 @@ NSDictionary *allShiftActions = nil;
     // ask to start it automatically - make sure it is not there
 
     if (!FMTIsLoginItemEnabled()) {
-        NSInteger ret = NSRunAlertPanel(NSLocalizedString(@"Start ShiftIt automatically?", nil),
-                                        NSLocalizedString(@"Would you like to have ShiftIt automatically started at a login time?", nil),
-                                        NSLocalizedString(@"Yes", nil), NSLocalizedString(@"No", nil), NULL);
-        switch (ret) {
-            case NSAlertDefaultReturn:
-            {
-                NSError *error = nil;
-                if (!FMTSetLoginItemEnabled(YES, &error)) {
-                    FMTLogError(@"Unable to add ShiftIt to the login items: %@", [error localizedDescription]);
-                }
-                break;
+        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        [alert setMessageText:NSLocalizedString(@"Start ShiftIt automatically?", nil)];
+        [alert setInformativeText:NSLocalizedString(@"Would you like to have ShiftIt automatically started at a login time?", nil)];
+        [alert addButtonWithTitle:NSLocalizedString(@"Yes", nil)];
+        [alert addButtonWithTitle:NSLocalizedString(@"No", nil)];
+
+        if ([alert runModal] == NSAlertFirstButtonReturn) {
+            NSError *error = nil;
+            if (!FMTSetLoginItemEnabled(YES, &error)) {
+                FMTLogError(@"Unable to add ShiftIt to the login items: %@", [error localizedDescription]);
             }
-            default:
-                break;
         }
     }
 }
