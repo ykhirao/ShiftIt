@@ -24,7 +24,7 @@
 - **依存ライブラリは Swift Package Manager で入れる。** ビルド済みの `.framework` をリポジトリに置くのはやめる。
 - **X11（XQuartz）対応はやめる。** X11 まわりのコードは削除してよい。
 - **Xcode プロジェクトは XcodeGen の `project.yml` で管理する。** 設定を変えるときは `project.yml` を直し、生成された `ShiftIt.xcodeproj` を直接いじらない。
-- 使われていない仕組みは削除してよい：本家のリリース用ファイル（`release/`、`fabfile.py`、`Pipfile*`）、旧 CI（`.travis.yml`）、`GTM/`（Google Toolbox for Mac の一部）など。
+- 使われていない仕組みは削除してよい（例：`GTM/`（Google Toolbox for Mac の一部））。
 - Swift への書き換えは、Apple Silicon で動くようになってから検討する。まずは Objective-C のまま動かす。
 - Xcode の警告は放置しない。今の Xcode が勧めるプロジェクト設定に更新する。
 
@@ -35,7 +35,7 @@
 | `project.yml` | Xcode プロジェクトの定義（XcodeGen）。`ShiftIt.xcodeproj` はここから生成し、リポジトリには入れない |
 | `ShiftIt/*.m`, `*.h` | アプリ本体 |
 | `ShiftIt/FMT/` | 汎用ユーティリティ（ホットキー登録、ログイン項目など） |
-| `ShiftIt/GTM/` | Google Toolbox for Mac の一部（ログ出力とガベージコレクション） |
+| `ShiftIt/GTM/` | Google Toolbox for Mac の一部（ログ出力） |
 | `ShiftIt/Base.lproj/`, `ShiftIt/ja.lproj/` | 画面（xib）と文言。英語と日本語 |
 | `ShiftIt/ShiftIt Tests/`, `ShiftIt/FMT Tests/` | テスト（OCUnit。今の Xcode では動かない） |
 
@@ -76,7 +76,8 @@
   ```
 
 - ウィンドウを動かすには「アクセシビリティ」の許可が要るので、動作確認は CI ではできない。CI でできたアプリを実機に入れて確かめる。
-- アクセシビリティの許可はコード署名に紐づく。仮の署名（ad-hoc）だと、ビルドするたびに許可を付け直すことになる。
+- アクセシビリティの許可はコード署名に紐づく。CI では GitHub Secrets の自己署名証明書（`SIGNING_CERT_P12`、`SIGNING_CERT_PASSWORD`）で署名し直すので、ビルドが変わっても許可は引き継がれる。証明書が登録されていない環境（フォークからの PR など）では仮の署名（ad-hoc）になり、入れ替えるたびに許可を付け直すことになる。
+- 証明書の秘密鍵は GitHub Secrets にしか置いていない（取り出せない）。作り直すと、利用者は一度だけ許可を付け直すことになる。
 
 ## 作業リスト
 
@@ -87,14 +88,15 @@
 - [x] **Sparkle を削除する**：同梱の 1.5 Beta 6 は PowerPC・32bit Intel・64bit Intel 向けのみ。更新の確認先（`SUFeedURL`）は本家の appcast で、署名鍵も本家しか持っていないので、このフォークでは元々機能しない。自動アップデートが要るなら、あとで Sparkle 2 を入れ直す。
 - [x] **ShortcutRecorder を 3.x に置き換える**（Swift Package Manager で入れる）：同梱版は Intel 向けのみだった。
 - [x] **X11 対応のコードを削除する**。
-- [ ] **廃止された API を置き換える**：
-  - ガベージコレクション：`GTM/GTMGarbageCollection.h`（`NSGarbageCollector`）、`NSMakeCollectable`
-  - ログイン項目：`FMT/FMTLoginItems.*`（`LSSharedFileList`）→ `SMAppService`
-  - 警告ダイアログ：`NSRunAlertPanel` → `NSAlert`
+- [x] **廃止された API を置き換える**：
+  - ガベージコレクション、ログイン項目（`LSSharedFileList` → `SMAppService`）、警告ダイアログ（`NSRunAlertPanel` → `NSAlert`）、「システム環境設定」の操作（ScriptingBridge → URL で「システム設定」を開く）
 - [ ] **ARC に移す**。
 - [ ] **テストを XCTest に移す**：OCUnit（SenTestingKit）は今の Xcode から削除されている。`project.yml` にテストのターゲットを足す。
-- [ ] **署名**：arm64 のバイナリは署名がないと動かない。ビルドのたびにアクセシビリティ許可が外れないよう、自己署名証明書を GitHub Secrets に登録して CI で署名する。
-- [ ] **古いファイルを掃除する**：`release/`、`fabfile.py`、`Pipfile*`、`.travis.yml`。README もこのフォーク向けに書き直す。
+- [x] **署名**：自己署名証明書を GitHub Secrets に登録して CI で署名する。
+- [x] **コンパイラの警告をなくす**（ShortcutRecorder 側の警告は除く）。
+- [ ] **実機で動作を確かめる**：アクセシビリティの許可、各ショートカット、設定画面のショートカット記録欄、ログイン時の自動起動。
+- [x] **古いファイルを掃除し、README をこのフォーク向けに書き直す**。
+- [ ] **配布を GitHub Releases にする**：今は Actions の成果物から取ってもらっている（保存期間は 90 日）。
 
 ## コミットと PR
 
