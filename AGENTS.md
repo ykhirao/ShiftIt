@@ -21,7 +21,7 @@
 
 - **最低対応 OS は macOS 13。** ログイン項目の API（`SMAppService`）が 13 からなので、それ未満は切り捨てる。
 - **CPU は arm64 だけ**を作る（Apple Silicon 専用。x86_64 は作らない）。
-- **メモリ管理は ARC に移す。** 今のコードは手動参照カウント（MRC）で、`retain` / `release` / `autorelease` を書いている。
+- **メモリ管理は ARC。** 例外は外から持ち込んだ `GTM/GTMLogger.m` だけで、`project.yml` で `-fno-objc-arc` を付けて MRC のままコンパイルしている。
 - **依存ライブラリは Swift Package Manager で入れる。** ビルド済みの `.framework` をリポジトリに置くのはやめる。
 - **X11（XQuartz）対応はやめる。** X11 まわりのコードは削除してよい。
 - **Xcode プロジェクトは XcodeGen の `project.yml` で管理する。** 設定を変えるときは `project.yml` を直し、生成された `ShiftItNeo.xcodeproj` を直接いじらない。
@@ -52,7 +52,7 @@
 
 ## コードの書き方
 
-- Objective-C。新しく書くコードは今の書き方（ARC、プロパティ、nullability 注釈、モダンな構文）で書く。
+- Objective-C（ARC）。新しく書くコードは今の書き方（プロパティ、nullability 注釈、モダンな構文）で書く。CoreFoundation の型と行き来するときは `__bridge` / `CFBridgingRelease` で所有権をはっきりさせる。
 - クラス名の接頭辞は `SI`（ShiftIt 本体）と `FMT`（ユーティリティ）。
 - 新しいファイルには GPLv3 のライセンス表記を付ける（フォーク元のライセンスを引き継ぐため）。
 - 画面の文言を変えたら、`Base.lproj` と `ja.lproj` の両方を直す。
@@ -91,7 +91,7 @@
 - [x] **X11 対応のコードを削除する**。
 - [x] **廃止された API を置き換える**：
   - ガベージコレクション、ログイン項目（`LSSharedFileList` → `SMAppService`）、警告ダイアログ（`NSRunAlertPanel` → `NSAlert`）、「システム環境設定」の操作（ScriptingBridge → URL で「システム設定」を開く）
-- [ ] **ARC に移す**。
+- [x] **ARC に移す**。
 - [ ] **テストを XCTest に移す**：OCUnit（SenTestingKit）は今の Xcode から削除されている。`project.yml` にテストのターゲットを足す。
 - [x] **署名**：自己署名証明書を GitHub Secrets に登録して CI で署名する。
 - [x] **コンパイラの警告をなくす**（ShortcutRecorder 側の警告は除く）。

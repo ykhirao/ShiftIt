@@ -95,7 +95,7 @@ const FMTDirection kDefaultDirections[] = {kRightDirection, kBottomDirection, kL
 		return nil;
 	}
 
-    screen_ = [screen retain];
+    screen_ = screen;
 
 	return self;
 }
@@ -157,7 +157,7 @@ const FMTDirection kDefaultDirections[] = {kRightDirection, kBottomDirection, kL
 }
 
 + (SIScreen *) screenFromNSScreen:(NSScreen *)screen {
-    return [[[SIScreen alloc] initWithNSScreen:screen] autorelease];
+    return [[SIScreen alloc] initWithNSScreen:screen];
 }
 
 /**
@@ -231,10 +231,5 @@ const FMTDirection kDefaultDirections[] = {kRightDirection, kBottomDirection, kL
     return [path objectAtIndex:idx];
 }
 
-- (void)dealloc {
-    [screen_ release];
-
-    [super dealloc];
-}
 
 @end

@@ -109,7 +109,7 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 }
 
 -(IBAction)reportIssue:(id)sender {
-    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    NSAlert *alert = [[NSAlert alloc] init];
     [alert setMessageText:NSLocalizedString(@"Before you report new issue", nil)];
     [alert setInformativeText:NSLocalizedString(@"Please make sure that you look at the other issues before you submit a new one.", nil)];
     [alert addButtonWithTitle:NSLocalizedString(@"Take me to github.com", nil)];
@@ -128,7 +128,7 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 
 - (IBAction)showMenuBarIconAction:(id)sender {
     if (![showMenuIcon state]) {
-        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        NSAlert *alert = [[NSAlert alloc] init];
         [alert setMessageText:@"Disabling menu icon"];
         [alert setInformativeText:@"You chose to disable the menu icon. This means that you won't be able to easily open the Preferences window in the future.\n"
                    "\n"
@@ -242,7 +242,7 @@ static NSString *hotkeyIdentifiers[] = {
     ShiftItAction *action = [allShiftActions objectForKey:identifier];
     FMTAssertNotNil(action);
     if (tableColumn == hotkeyLabelColumn_) {
-        NSTextField* text = [[[NSTextField alloc] initWithFrame:tableView.frame] autorelease];
+        NSTextField* text = [[NSTextField alloc] initWithFrame:tableView.frame];
         text.alignment = NSTextAlignmentRight;
         text.drawsBackground = NO;
         text.stringValue = action.label;
@@ -251,7 +251,7 @@ static NSString *hotkeyIdentifiers[] = {
         return text;
     }
     if (tableColumn == hotkeyColumn_) {
-        SRRecorderControl* recorder = [[[SRRecorderControl alloc] initWithFrame:tableView.frame] autorelease];
+        SRRecorderControl* recorder = [[SRRecorderControl alloc] initWithFrame:tableView.frame];
         recorder.delegate = self;
         recorder.identifier = identifier;
         [self updateRecorderCombo:recorder forIdentifier:identifier];

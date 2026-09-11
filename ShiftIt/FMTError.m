@@ -31,7 +31,7 @@ inline NSError* FMTCreateErrorWithCause(NSString *errorDomain, NSInteger errorCo
 inline NSError* FMTCreateErrorWithCause_(NSString *errorDomain, NSInteger errorCode, NSError *cause, NSString *fmt, va_list args) {
     FMTAssertNotNil(fmt);
 
-    NSString *msg = [[[NSString alloc] initWithFormat:fmt arguments:args] autorelease];
+    NSString *msg = [[NSString alloc] initWithFormat:fmt arguments:args];
 
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithCapacity:1];
     [userInfo setObject:msg forKey:NSLocalizedDescriptionKey];

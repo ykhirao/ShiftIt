@@ -78,21 +78,13 @@
 	FMTAssertNotNil(provider);
 	FMTAssertNotNil(ref);
 	
-	hotKey_ = [hotKey retain];
+	hotKey_ = hotKey;
 	handler_ = handler;
-	provider_ = [provider retain];
-	userData_ = [userData retain];
+	provider_ = provider;
+	userData_ = userData;
 	ref_ = ref;
 	
 	return self;
-}
-
-- (void) dealloc {
-	[hotKey_ release];
-	[provider_ release];
-	[userData_ release];
-	
-	[super dealloc];
 }
 
 @end
@@ -138,12 +130,6 @@ SINGLETON_BOILERPLATE(FMTHotKeyManager, sharedHotKeyManager);
 	InstallApplicationEventHandler(&hotKeyHandler, 1, &eventType, NULL, NULL);	
 	
 	return self;
-}
-
-- (void)dealloc {
-	[allHotKeys release];
-	
-	[super dealloc];
 }
 
 // TODO: modify to propagate error
@@ -194,11 +180,11 @@ SINGLETON_BOILERPLATE(FMTHotKeyManager, sharedHotKeyManager);
 	}
 	
 	// safe
-	TWHotKeyRegistartion *hotKeyReg = [[[TWHotKeyRegistartion alloc] initWithHotKey:hotKey
+	TWHotKeyRegistartion *hotKeyReg = [[TWHotKeyRegistartion alloc] initWithHotKey:hotKey
                                                                                handler:handler
                                                                               provider:provider
                                                                               userData:userData
-                                                                                   ref:hotKeyRef] autorelease];
+                                                                                   ref:hotKeyRef];
 	
 	[allHotKeys setObject:hotKeyReg forKey:[NSNumber numberWithInt:hotKeyID.id]];	
 }

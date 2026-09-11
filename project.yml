@@ -18,8 +18,7 @@ settings:
   base:
     ARCHS: arm64
     MACOSX_DEPLOYMENT_TARGET: "13.0"
-    # ARC への移行が済むまでは手動参照カウント（MRC）のまま
-    CLANG_ENABLE_OBJC_ARC: NO
+    CLANG_ENABLE_OBJC_ARC: YES
     GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS: YES
     GCC_TREAT_INCOMPATIBLE_POINTER_TYPE_WARNINGS_AS_ERRORS: YES
   configs:
@@ -39,6 +38,11 @@ targets:
           - "GHUnitTestMain.m"
           - "FMT/Readme.md"
           - "ShiftIt-Info.plist"
+          - "GTM/GTMLogger.m"
+      # 外から持ち込んだ Google Toolbox for Mac のコードなので、手を入れずに MRC のままコンパイルする
+      - path: ShiftIt/GTM/GTMLogger.m
+        group: ShiftIt/GTM
+        compilerFlags: ["-fno-objc-arc"]
     dependencies:
       - sdk: Carbon.framework
       - sdk: Cocoa.framework
