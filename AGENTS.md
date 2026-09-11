@@ -86,7 +86,7 @@
 - [x] **Xcode プロジェクトを XcodeGen に移す**：最低対応 OS は macOS 13、CPU は arm64 だけ。
 - [x] **Sparkle を削除する**：同梱の 1.5 Beta 6 は PowerPC・32bit Intel・64bit Intel 向けのみ。更新の確認先（`SUFeedURL`）は本家の appcast で、署名鍵も本家しか持っていないので、このフォークでは元々機能しない。自動アップデートが要るなら、あとで Sparkle 2 を入れ直す。
 - [x] **ShortcutRecorder を 3.x に置き換える**（Swift Package Manager で入れる）：同梱版は Intel 向けのみだった。
-- [ ] **X11 対応のコードを削除する**：`X11WindowDriver.*`、`#ifdef X11` の部分。
+- [x] **X11 対応のコードを削除する**。
 - [ ] **廃止された API を置き換える**：
   - ガベージコレクション：`GTM/GTMGarbageCollection.h`（`NSGarbageCollector`）、`NSMakeCollectable`
   - ログイン項目：`FMT/FMTLoginItems.*`（`LSSharedFileList`）→ `SMAppService`

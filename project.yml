@@ -37,7 +37,6 @@ targets:
           - "ShiftIt Tests"
           - "FMT Tests"
           - "GHUnitTestMain.m"
-          - "X11WindowDriver.*"
           - "FMT/Readme.md"
           - "ShiftIt-Info.plist"
     dependencies:

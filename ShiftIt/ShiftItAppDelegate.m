@@ -25,10 +25,6 @@
 #import "PreferencesWindowController.h"
 #import "AXWindowDriver.h"
 
-#ifdef X11
-#import "X11WindowDriver.h"
-#endif
-
 
 // the name of the plist file containing the preference defaults
 NSString *const kShiftItUserDefaults = @"ShiftIt-defaults";
@@ -330,23 +326,12 @@ NSDictionary *allShiftActions = nil;
         [drivers addObject:axDriver];
     }
 
-#ifdef X11
-    // initialize X11 driver
-    X11WindowDriver *x11Driver = [[[X11WindowDriver alloc] initWithError:&error] autorelease];
-    if (error) {
-        FMTLogInfo(@"Unable to load X11 driver: %@%@", [error localizedDescription], [error fullDescription]);
-    } else {
-        FMTLogInfo(@"Added driver: %@", [x11Driver description]);
-        [drivers addObject:x11Driver];
-    }
-
     if ([drivers count] == 0) {
         FMTLogError(@"No driver could be loaded - exiting");
         // TODO: externalize
         [NSApp presentError:SICreateError(100, @"No driver could be loaded")];
         [NSApp terminate:self];
     }
-#endif
 
     windowManager_ = [[SIWindowManager alloc] initWithDrivers:[NSArray arrayWithArray:drivers]];
 
