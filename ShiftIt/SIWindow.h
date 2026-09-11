@@ -26,7 +26,7 @@
 /**
  * @param geometry a pointer to a NSRect where the current geometry of a window will be stored. It can be nil in which case no information will be stored.
  * @param screen a pointer to a SIScreen where the current screen of a window will be stored. It can be nil in which case no information will be stored.
- * @param shall there be a problem obtaining the window geometry information the cause will be stored in this pointer if it is not nil.
+ * @param error shall there be a problem obtaining the window geometry information the cause will be stored in this pointer if it is not nil.
  *
  * @returns YES on success, NO otherwise while setting the error parameter
  */

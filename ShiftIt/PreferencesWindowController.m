@@ -122,7 +122,7 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 - (IBAction)revealLogFileInFinder:(id)sender {
     if (debugLoggingFile_) {
         NSURL *fileURL = [NSURL fileURLWithPath:debugLoggingFile_];
-        [[NSWorkspace sharedWorkspace] selectFile:[fileURL path] inFileViewerRootedAtPath:nil];
+        [[NSWorkspace sharedWorkspace] selectFile:[fileURL path] inFileViewerRootedAtPath:@""];
     }
 }
 
@@ -243,7 +243,7 @@ static NSString *hotkeyIdentifiers[] = {
     FMTAssertNotNil(action);
     if (tableColumn == hotkeyLabelColumn_) {
         NSTextField* text = [[[NSTextField alloc] initWithFrame:tableView.frame] autorelease];
-        text.alignment = NSRightTextAlignment;
+        text.alignment = NSTextAlignmentRight;
         text.drawsBackground = NO;
         text.stringValue = action.label;
         [text setBordered:NO];

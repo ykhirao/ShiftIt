@@ -304,8 +304,8 @@ NSDictionary *allShiftActions = nil;
 
         NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithCapacity:3];
         [userInfo setObject:[action identifier] forKey:kActionIdentifierKey];
-        [userInfo setObject:[NSNumber numberWithInt:[defaults integerForKey:KeyCodePrefKey(identifier)]] forKey:kHotKeyKeyCodeKey];
-        [userInfo setObject:[NSNumber numberWithInt:[defaults integerForKey:ModifiersPrefKey(identifier)]] forKey:kHotKeyModifiersKey];
+        [userInfo setObject:[NSNumber numberWithInteger:[defaults integerForKey:KeyCodePrefKey(identifier)]] forKey:kHotKeyKeyCodeKey];
+        [userInfo setObject:[NSNumber numberWithInteger:[defaults integerForKey:ModifiersPrefKey(identifier)]] forKey:kHotKeyModifiersKey];
 
         NSNotification *notification = [NSNotification notificationWithName:kHotKeyChangedNotification object:self userInfo:userInfo];
         [self shiftItActionHotKeyChanged_:notification];
@@ -353,8 +353,7 @@ NSDictionary *allShiftActions = nil;
             
             statusItem_ = [[statusBar statusItemWithLength:kSIMenuItemSize] retain];
             [statusItem_ setMenu:statusMenu_];
-            [statusItem_ setImage:icon];
-            [statusItem_ setHighlightMode:YES];
+            [[statusItem_ button] setImage:icon];
         }
     } else {
         [statusBar removeStatusItem:statusItem_];
