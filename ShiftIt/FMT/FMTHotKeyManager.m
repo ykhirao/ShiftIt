@@ -111,7 +111,8 @@ static inline OSStatus hotKeyHandler(EventHandlerCallRef inHandlerCallRef,EventR
 	TWHotKeyRegistartion* hotKeyReg = [allHotKeys objectForKey:id];
 	
 	if (hotKeyReg != nil) {
-		objc_msgSend([hotKeyReg provider], [hotKeyReg handler], [hotKeyReg userData]);
+		// objc_msgSend must be cast to the exact method type; arm64 does not pass arguments like a variadic call
+		((void (*)(id, SEL, id))objc_msgSend)([hotKeyReg provider], [hotKeyReg handler], [hotKeyReg userData]);
 		return noErr;
 	} else {
 		return eventNotHandledErr;
