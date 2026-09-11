@@ -33,3 +33,10 @@
 "Would you like to have ShiftItNeo automatically started at a login time?" = "Would you like to have ShiftItNeo automatically started at a login time?";
 "Yes" = "Yes";
 "No" = "No";
+
+"Before you report new issue" = "Before you report new issue";
+"Please make sure that you look at the other issues before you submit a new one." = "Please make sure that you look at the other issues before you submit a new one.";
+"Take me to github.com" = "Take me to github.com";
+
+"Disabling menu icon" = "Disabling menu icon";
+"MENU_ICON_DISABLED_INFORMATIVE_TEXT" = "You chose to disable the menu icon. This means that you won't be able to easily open the Preferences window in the future.\n\nTo open the Preferences window, while the menu icon is hidden, just relaunch the application.";

@@ -30,7 +30,7 @@ NSString *const kActionIdentifierKey = @"kActionIdentifierKey";
 NSString *const kHotKeyKeyCodeKey = @"kHotKeyKeyCodeKey";
 NSString *const kHotKeyModifiersKey = @"kHotKeyModifiersKey";
 
-NSString *const kShiftItGithubIssueURL = @"https://github.com/fikovnik/ShiftIt/issues";
+NSString *const kShiftItGithubIssueURL = @"https://github.com/ykhirao/ShiftIt/issues";
 
 NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 
@@ -129,10 +129,8 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
 - (IBAction)showMenuBarIconAction:(id)sender {
     if (![showMenuIcon state]) {
         NSAlert *alert = [[NSAlert alloc] init];
-        [alert setMessageText:@"Disabling menu icon"];
-        [alert setInformativeText:@"You chose to disable the menu icon. This means that you won't be able to easily open the Preferences window in the future.\n"
-                   "\n"
-                   "To open the Preferences window, while the menu icon is hidden, just relaunch the application."];
+        [alert setMessageText:NSLocalizedString(@"Disabling menu icon", nil)];
+        [alert setInformativeText:NSLocalizedString(@"MENU_ICON_DISABLED_INFORMATIVE_TEXT", nil)];
 
         [alert runModal];
     }
