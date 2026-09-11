@@ -230,7 +230,7 @@ static NSString *hotkeyIdentifiers[] = {
     NSString* identifier = hotkeyIdentifiers[row];
     if (identifier == NULL)
         return 1;
-    return 23;
+    return 26;
 }
 
 - (NSView *)tableView:(NSTableView *)tableView
@@ -243,7 +243,7 @@ static NSString *hotkeyIdentifiers[] = {
     ShiftItAction *action = [allShiftActions objectForKey:identifier];
     FMTAssertNotNil(action);
     if (tableColumn == hotkeyLabelColumn_) {
-        NSTextField* text = [[NSTextField alloc] initWithFrame:tableView.frame];
+        NSTextField* text = [[[NSTextField alloc] initWithFrame:tableView.frame] autorelease];
         text.alignment = NSRightTextAlignment;
         text.drawsBackground = NO;
         text.stringValue = action.label;
@@ -252,7 +252,7 @@ static NSString *hotkeyIdentifiers[] = {
         return text;
     }
     if (tableColumn == hotkeyColumn_) {
-        SRRecorderControl* recorder = [[SRRecorderControl alloc] initWithFrame:tableView.frame];
+        SRRecorderControl* recorder = [[[SRRecorderControl alloc] initWithFrame:tableView.frame] autorelease];
         recorder.delegate = self;
         recorder.identifier = identifier;
         [self updateRecorderCombo:recorder forIdentifier:identifier];
@@ -262,7 +262,7 @@ static NSString *hotkeyIdentifiers[] = {
     return NULL;
 }
 
-- (void)shortcutRecorder:(SRRecorderControl *)recorder keyComboDidChange:(KeyCombo)newKeyCombo {
+- (void)recorderControlDidEndRecording:(SRRecorderControl *)recorder {
     NSString *identifier = recorder.identifier;
     FMTAssertNotNil(identifier);
 
@@ -271,10 +271,15 @@ static NSString *hotkeyIdentifiers[] = {
 
     FMTLogDebug(@"ShiftIt action %@ hotkey changed: ", [action identifier]);
 
+    // the preferences keep the key code -1 for an action without a shortcut
+    SRShortcut *shortcut = recorder.objectValue;
+    NSInteger keyCode = shortcut ? shortcut.keyCode : -1;
+    NSUInteger modifiers = shortcut ? shortcut.modifierFlags : 0;
+
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithCapacity:3];
     [userInfo setObject:[action identifier] forKey:kActionIdentifierKey];
-    [userInfo setObject:[NSNumber numberWithInteger:newKeyCombo.code] forKey:kHotKeyKeyCodeKey];
-    [userInfo setObject:[NSNumber numberWithLong:newKeyCombo.flags] forKey:kHotKeyModifiersKey];
+    [userInfo setObject:[NSNumber numberWithInteger:keyCode] forKey:kHotKeyKeyCodeKey];
+    [userInfo setObject:[NSNumber numberWithUnsignedInteger:modifiers] forKey:kHotKeyModifiersKey];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:kHotKeyChangedNotification object:self userInfo:userInfo];
 }
@@ -293,10 +298,17 @@ static NSString *hotkeyIdentifiers[] = {
 
 - (void)updateRecorderCombo:(SRRecorderControl *)recorder forIdentifier:(NSString *)identifier {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    KeyCombo combo;
-    combo.code = [defaults integerForKey:KeyCodePrefKey(identifier)];
-    combo.flags = [defaults integerForKey:ModifiersPrefKey(identifier)];
-    [recorder setKeyCombo:combo];
+    NSInteger keyCode = [defaults integerForKey:KeyCodePrefKey(identifier)];
+    NSUInteger modifiers = [defaults integerForKey:ModifiersPrefKey(identifier)];
+
+    if (keyCode == -1) {
+        recorder.objectValue = nil;
+    } else {
+        recorder.objectValue = [SRShortcut shortcutWithCode:(SRKeyCode)keyCode
+                                              modifierFlags:modifiers & NSEventModifierFlagDeviceIndependentFlagsMask
+                                                 characters:nil
+                                charactersIgnoringModifiers:nil];
+    }
 }
 
 #pragma mark TabView delegate methods

@@ -37,8 +37,9 @@
 | `ShiftIt/FMT/` | 汎用ユーティリティ（ホットキー登録、ログイン項目など） |
 | `ShiftIt/GTM/` | Google Toolbox for Mac の一部（ログ出力とガベージコレクション） |
 | `ShiftIt/Base.lproj/`, `ShiftIt/ja.lproj/` | 画面（xib）と文言。英語と日本語 |
-| `ShiftIt/Sparkle.framework`, `ShiftIt/ShortcutRecorder.framework` | 同梱のビルド済みライブラリ。どちらも Apple Silicon 非対応 |
 | `ShiftIt/ShiftIt Tests/`, `ShiftIt/FMT Tests/` | テスト（OCUnit。今の Xcode では動かない） |
+
+依存ライブラリは [ShortcutRecorder](https://github.com/Kentzo/ShortcutRecorder) 3.4.0（ショートカットの記録欄）だけ。Swift Package Manager で入れていて、バージョンは `project.yml` の `packages` で指定している。
 
 主なクラス：
 
@@ -83,8 +84,8 @@
 
 - [x] **CI を作る**：GitHub Actions でビルドし、できたアプリを成果物として残す。
 - [x] **Xcode プロジェクトを XcodeGen に移す**：最低対応 OS は macOS 13、CPU は arm64 だけ。
-- [ ] **Sparkle を削除する**：同梱の 1.5 Beta 6 は PowerPC・32bit Intel・64bit Intel 向けのみ。更新の確認先（`SUFeedURL`）は本家の appcast で、署名鍵も本家しか持っていないので、このフォークでは元々機能しない。自動アップデートが要るなら、あとで Sparkle 2 を入れ直す。
-- [ ] **ShortcutRecorder を 3.x に置き換える**（Swift Package Manager で入れる）：同梱版は Intel 向けのみ。関係するのは `FMT/FMTHotKey+SRKeyCombo.*`、`FMT/FMTHotKey.m`、`FMT/FMTHotKeyManager.m`、`PreferencesWindowController.*`、`Base.lproj/PreferencesWindow.xib`。
+- [x] **Sparkle を削除する**：同梱の 1.5 Beta 6 は PowerPC・32bit Intel・64bit Intel 向けのみ。更新の確認先（`SUFeedURL`）は本家の appcast で、署名鍵も本家しか持っていないので、このフォークでは元々機能しない。自動アップデートが要るなら、あとで Sparkle 2 を入れ直す。
+- [x] **ShortcutRecorder を 3.x に置き換える**（Swift Package Manager で入れる）：同梱版は Intel 向けのみだった。
 - [ ] **X11 対応のコードを削除する**：`X11WindowDriver.*`、`#ifdef X11` の部分。
 - [ ] **廃止された API を置き換える**：
   - ガベージコレクション：`GTM/GTMGarbageCollection.h`（`NSGarbageCollector`）、`NSMakeCollectable`

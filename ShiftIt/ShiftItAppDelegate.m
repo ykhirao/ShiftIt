@@ -441,13 +441,17 @@ NSDictionary *allShiftActions = nil;
     [menuItem setAction:@selector(shiftItMenuAction_:)];
 
     if (keyCode != -1) {
-        NSString *keyCodeString = SRStringForKeyCode(keyCode);
-        if (!keyCodeString) {
+        SRShortcut *shortcut = [SRShortcut shortcutWithCode:(SRKeyCode)keyCode
+                                              modifierFlags:modifiers & NSEventModifierFlagDeviceIndependentFlagsMask
+                                                 characters:nil
+                                charactersIgnoringModifiers:nil];
+        NSString *keyEquivalent = [[SRKeyEquivalentTransformer sharedTransformer] transformedValue:shortcut];
+        if (!keyEquivalent) {
             FMTLogInfo(@"Unable to get string representation for a key code: %ld", keyCode);
-            keyCodeString = @"";
+            keyEquivalent = @"";
         }
-        [menuItem setKeyEquivalent:[keyCodeString lowercaseString]];
-        [menuItem setKeyEquivalentModifierMask:modifiers];
+        [menuItem setKeyEquivalent:keyEquivalent];
+        [menuItem setKeyEquivalentModifierMask:[[[SRKeyEquivalentModifierMaskTransformer sharedTransformer] transformedValue:shortcut] unsignedIntegerValue]];
     } else {
         [menuItem setKeyEquivalent:@""];
         [menuItem setKeyEquivalentModifierMask:0];

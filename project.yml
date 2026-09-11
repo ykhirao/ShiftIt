@@ -9,6 +9,11 @@ options:
   developmentLanguage: en
   createIntermediateGroups: true
 
+packages:
+  ShortcutRecorder:
+    url: https://github.com/Kentzo/ShortcutRecorder
+    exactVersion: 3.4.0
+
 settings:
   base:
     ARCHS: arm64
@@ -33,15 +38,13 @@ targets:
           - "FMT Tests"
           - "GHUnitTestMain.m"
           - "X11WindowDriver.*"
-          - "*.framework"
           - "FMT/Readme.md"
           - "ShiftIt-Info.plist"
     dependencies:
       - sdk: Carbon.framework
       - sdk: Cocoa.framework
       - sdk: ScriptingBridge.framework
-      - framework: ShiftIt/ShortcutRecorder.framework
-        embed: true
+      - package: ShortcutRecorder
     settings:
       base:
         PRODUCT_NAME: ShiftIt
@@ -49,7 +52,6 @@ targets:
         INFOPLIST_FILE: ShiftIt/ShiftIt-Info.plist
         GCC_PREFIX_HEADER: ShiftIt/ShiftIt_Prefix.pch
         GCC_PRECOMPILE_PREFIX_HEADER: YES
-        FRAMEWORK_SEARCH_PATHS: ["$(inherited)", "$(PROJECT_DIR)/ShiftIt"]
         COMBINE_HIDPI_IMAGES: YES
         # 仮の署名（ad-hoc）。Apple Silicon では署名のないアプリは起動できない
         CODE_SIGN_IDENTITY: "-"

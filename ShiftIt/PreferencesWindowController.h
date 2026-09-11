@@ -21,7 +21,7 @@
 #import <Cocoa/Cocoa.h>
 #import <ShortcutRecorder/ShortcutRecorder.h>
 
-@interface PreferencesWindowController : NSWindowController {
+@interface PreferencesWindowController : NSWindowController <SRRecorderControlDelegate> {
  @private
 	NSString *selectedTabIdentifier_;
     NSString *debugLoggingFile_;
