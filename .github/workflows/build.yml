@@ -1,0 +1,54 @@
+name: Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Xcode のバージョン
+        run: xcodebuild -version
+
+      - name: ビルド
+        run: |
+          set -o pipefail
+          mkdir -p build
+          xcodebuild \
+            -project ShiftIt/ShiftIt.xcodeproj \
+            -scheme "ShiftIt NoX11" \
+            -configuration Release \
+            -derivedDataPath build/DerivedData \
+            ARCHS=arm64 \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGN_IDENTITY=- \
+            build 2>&1 | tee build/xcodebuild.log
+
+      - name: アプリを zip にまとめる
+        run: |
+          app=$(find build/DerivedData/Build/Products/Release -maxdepth 1 -name "*.app" | head -1)
+          echo "built: $app"
+          lipo -info "$app/Contents/MacOS/"*
+          ditto -c -k --keepParent "$app" build/ShiftIt.zip
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ShiftIt
+          path: build/ShiftIt.zip
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: xcodebuild-log
+          path: build/xcodebuild.log
