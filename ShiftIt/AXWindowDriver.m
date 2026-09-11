@@ -746,7 +746,7 @@ NSInteger const kAXWindowDriverErrorCode = 20104;
         }
 
         // TODO: extract and turn into a semaphore
-        [NSThread sleepForTimeInterval:delayBetweenOperations_];
+        [NSThread sleepForTimeInterval:self->delayBetweenOperations_];
 
         // see what has happened
         if (![self getGeometry_:nil screen:nil windowRect:&currentGeometry
@@ -785,7 +785,7 @@ NSInteger const kAXWindowDriverErrorCode = 20104;
         }
 
         // TODO: extract and turn into a semaphore
-        [NSThread sleepForTimeInterval:delayBetweenOperations_];
+        [NSThread sleepForTimeInterval:self->delayBetweenOperations_];
 
         // see what has happened
         if (![self getGeometry_:nil screen:nil windowRect:&currentGeometry

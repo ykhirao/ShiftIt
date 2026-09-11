@@ -21,7 +21,7 @@ for f in $(cd "$ROOT" && ls *.m FMT/*.m GTM/*.m | grep -v GHUnitTestMain); do
   case $f in GTM/*) arc=-fno-objc-arc ;; esac
   out=$(clang -fsyntax-only $arc -fmodules -fobjc-exceptions -arch arm64 -isysroot "$SDK" -mmacosx-version-min=13.0 \
     -DNDEBUG=1 -include "$ROOT/ShiftIt_Prefix.pch" -I"$ROOT" -I"$ROOT/FMT" -I"$ROOT/GTM" -I"$SR_INCLUDE" \
-    -Wall -Werror=incompatible-pointer-types -Werror=implicit-function-declaration \
+    -Wall -Wimplicit-retain-self -Werror=incompatible-pointer-types -Werror=implicit-function-declaration \
     "$ROOT/$f" 2>&1)
   if echo "$out" | grep -q "error:"; then
     fail=1
