@@ -1,8 +1,8 @@
-<h1><img src="artwork/ShiftIt.png" width="72" height="72" valign="middle"/> ShiftIt</h1>
+<h1><img src="artwork/ShiftIt.png" width="72" height="72" valign="middle"/> ShiftItNeo</h1>
 
 キーボードショートカットで、ウィンドウの位置と大きさを変える macOS のメニューバーアプリです。
 
-[fikovnik/ShiftIt](https://github.com/fikovnik/ShiftIt)（2023 年を最後に更新停止）のフォークで、**Apple Silicon の Mac で最新の macOS でもネイティブに動く**ように作り直しています。
+[fikovnik/ShiftIt](https://github.com/fikovnik/ShiftIt)（2023 年を最後に更新停止）のフォークで、**Apple Silicon の Mac で最新の macOS でもネイティブに動く**ように作り直しています。本家の ShiftIt とは別のアプリ（バンドル ID は `io.github.ykhirao.ShiftItNeo`）なので、両方を入れても混ざりません。
 
 ![メニュー](docs/schreenshot-menu.png)
 
@@ -19,37 +19,37 @@
 
    ```sh
    id=$(gh run list --repo ykhirao/ShiftIt --workflow Build --branch main --status success --limit 1 --json databaseId -q '.[0].databaseId')
-   gh run download "$id" --repo ykhirao/ShiftIt --name ShiftIt
+   gh run download "$id" --repo ykhirao/ShiftIt --name ShiftItNeo
    ```
 
-   開発中の版を試すときは `--branch develop` にします。ブラウザからなら、[Actions](https://github.com/ykhirao/ShiftIt/actions/workflows/build.yml) の実行結果の Artifacts から `ShiftIt` をダウンロードできます（GitHub へのログインが必要です）。
+   開発中の版を試すときは `--branch develop` にします。ブラウザからなら、[Actions](https://github.com/ykhirao/ShiftIt/actions/workflows/build.yml) の実行結果の Artifacts から `ShiftItNeo` をダウンロードできます（GitHub へのログインが必要です）。
 
-2. `ShiftIt.zip` を展開し、`ShiftIt.app` を `/Applications` に移す。
+2. `ShiftItNeo.zip` を展開し、`ShiftItNeo.app` を `/Applications` に移す。
 
 3. Apple の公証を受けていないので、ブラウザでダウンロードした場合は起動が止められます。次のコマンドで隔離属性を外してください：
 
    ```sh
-   xattr -dr com.apple.quarantine /Applications/ShiftIt.app
+   xattr -dr com.apple.quarantine /Applications/ShiftItNeo.app
    ```
 
-4. ShiftIt を起動し、**システム設定 > プライバシーとセキュリティ > アクセシビリティ** で ShiftIt をオンにする。
+4. ShiftItNeo を起動し、**システム設定 > プライバシーとセキュリティ > アクセシビリティ** で ShiftItNeo をオンにする。
 
 アプリは自己署名証明書で署名しているので、新しい版に入れ替えてもアクセシビリティの許可はそのまま引き継がれます。うまく動かないときは、一度オフにしてからオンにし直してください。
 
 ## 使い方
 
-ShiftIt はメニューバーに常駐します。メニューに並んでいるアクション（左半分、右半分、最大化など）をショートカットで呼び出せます。ショートカットは設定画面で変えられます。
+ShiftItNeo はメニューバーに常駐します。メニューに並んでいるアクション（左半分、右半分、最大化など）をショートカットで呼び出せます。ショートカットは設定画面で変えられます。
 
 ### 同じ方向に続けて押したとき、幅を 1/2 → 1/3 → 2/3 と切り替える
 
 ```sh
-defaults write org.shiftitapp.ShiftIt multipleActionsCycleWindowSizes YES   # オン
-defaults write org.shiftitapp.ShiftIt multipleActionsCycleWindowSizes NO    # オフ
+defaults write io.github.ykhirao.ShiftItNeo multipleActionsCycleWindowSizes YES   # オン
+defaults write io.github.ykhirao.ShiftItNeo multipleActionsCycleWindowSizes NO    # オフ
 ```
 
 ### メニューバーのアイコンを消してしまった
 
-ShiftIt をもう一度起動すると、設定画面が開きます。
+ShiftItNeo をもう一度起動すると、設定画面が開きます。
 
 ### ショートカットを押しても何も起きない
 
@@ -64,7 +64,7 @@ ShiftIt をもう一度起動すると、設定画面が開きます。
   ```sh
   brew install xcodegen
   xcodegen generate
-  xcodebuild -project ShiftIt.xcodeproj -scheme ShiftIt -configuration Release build
+  xcodebuild -project ShiftItNeo.xcodeproj -scheme ShiftItNeo -configuration Release build
   ```
 
 - `develop` ブランチで開発し、`main` にマージします。push すると GitHub Actions でビルドされます。

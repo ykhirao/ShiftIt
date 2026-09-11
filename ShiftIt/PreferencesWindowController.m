@@ -149,7 +149,7 @@ NSString *const kHotKeysTabViewItemIdentifier = @"hotKeys";
     id <GTMLogWriter> writer = nil;
 
     if (flag) {
-        NSString *logFile = FMTStr(@"%@/ShiftIt-debug-log-%@.txt",
+        NSString *logFile = FMTStr(@"%@/ShiftItNeo-debug-log-%@.txt",
                 NSTemporaryDirectory(),
                 [[NSDate date] stringWithFormat:@"YYYYMMDD-HHmm"]);
 

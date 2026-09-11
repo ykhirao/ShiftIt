@@ -27,9 +27,9 @@
 "Recheck" = "再確認";
 "Open System Settings" = "システム設定を開く";
 "Quit" = "終了";
-"AUTHORIZATION_INFORMATIVE_TEXT" = "ShiftIt がアプリケーションのウインドウを移動・リサイズするには、アクセシビリティの許可が必要です。\n\nシステム設定 > プライバシーとセキュリティ > アクセシビリティ で ShiftIt をオンにしてください。一覧に ShiftIt がない場合は、＋ボタンで追加してください。\n\nShiftIt を更新したあとは、いったんオフにしてからオンにし直す必要があることがあります。";
+"AUTHORIZATION_INFORMATIVE_TEXT" = "ShiftItNeo がアプリケーションのウインドウを移動・リサイズするには、アクセシビリティの許可が必要です。\n\nシステム設定 > プライバシーとセキュリティ > アクセシビリティ で ShiftItNeo をオンにしてください。一覧に ShiftItNeo がない場合は、＋ボタンで追加してください。\n\nShiftItNeo を更新したあとは、いったんオフにしてからオンにし直す必要があることがあります。";
 
-"Start ShiftIt automatically?" = "ShiftIt を自動的に開きますか?";
-"Would you like to have ShiftIt automatically started at a login time?" = "ログイン時に自動的に ShiftIt を開始しますか?";
+"Start ShiftItNeo automatically?" = "ShiftItNeo を自動的に開きますか?";
+"Would you like to have ShiftItNeo automatically started at a login time?" = "ログイン時に自動的に ShiftItNeo を開始しますか?";
 "Yes" = "はい";
 "No" = "いいえ";

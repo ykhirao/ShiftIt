@@ -4,7 +4,8 @@
 
 ## このリポジトリについて
 
-- ShiftIt は、キーボードショートカットでウィンドウの位置と大きさを変える macOS のメニューバーアプリです。ライセンスは GPLv3。
+- ShiftItNeo は、キーボードショートカットでウィンドウの位置と大きさを変える macOS のメニューバーアプリです。ライセンスは GPLv3。
+- 本家の ShiftIt と区別するため、アプリ名は ShiftItNeo、バンドル ID は `io.github.ykhirao.ShiftItNeo` にしている。ソースのフォルダ名（`ShiftIt/`）とクラス名は本家のまま。
 - [fikovnik/ShiftIt](https://github.com/fikovnik/ShiftIt) のフォーク（[ykhirao/ShiftIt](https://github.com/ykhirao/ShiftIt)）です。本家は 2023 年を最後に更新がありません。
 - **このフォークの目標は、最新の Mac（Apple Silicon・最新の macOS）でネイティブに動かすことです。** 対象は Apple Silicon（M1 以降）の Mac だけで、Intel Mac には対応しない。
 - **本家の古い流儀には従わなくてよい。** コードの書き方、ビルドの仕組み、ドキュメントは今のやり方に合わせて作り直してよい。本家へ変更を戻すことは考えない。
@@ -23,7 +24,7 @@
 - **メモリ管理は ARC に移す。** 今のコードは手動参照カウント（MRC）で、`retain` / `release` / `autorelease` を書いている。
 - **依存ライブラリは Swift Package Manager で入れる。** ビルド済みの `.framework` をリポジトリに置くのはやめる。
 - **X11（XQuartz）対応はやめる。** X11 まわりのコードは削除してよい。
-- **Xcode プロジェクトは XcodeGen の `project.yml` で管理する。** 設定を変えるときは `project.yml` を直し、生成された `ShiftIt.xcodeproj` を直接いじらない。
+- **Xcode プロジェクトは XcodeGen の `project.yml` で管理する。** 設定を変えるときは `project.yml` を直し、生成された `ShiftItNeo.xcodeproj` を直接いじらない。
 - 使われていない仕組みは削除してよい（例：`GTM/`（Google Toolbox for Mac の一部））。
 - Swift への書き換えは、Apple Silicon で動くようになってから検討する。まずは Objective-C のまま動かす。
 - Xcode の警告は放置しない。今の Xcode が勧めるプロジェクト設定に更新する。
@@ -32,7 +33,7 @@
 
 | パス | 中身 |
 |---|---|
-| `project.yml` | Xcode プロジェクトの定義（XcodeGen）。`ShiftIt.xcodeproj` はここから生成し、リポジトリには入れない |
+| `project.yml` | Xcode プロジェクトの定義（XcodeGen）。`ShiftItNeo.xcodeproj` はここから生成し、リポジトリには入れない |
 | `ShiftIt/*.m`, `*.h` | アプリ本体 |
 | `ShiftIt/FMT/` | 汎用ユーティリティ（ホットキー登録、ログイン項目など） |
 | `ShiftIt/GTM/` | Google Toolbox for Mac の一部（ログ出力） |
@@ -59,7 +60,7 @@
 ## ビルドと動作確認
 
 - 開発機に Xcode はない（Command Line Tools のみ）。**ビルドは GitHub Actions の macOS ランナーで行う。** 公開リポジトリなので無料。
-  - 設定は `.github/workflows/build.yml`。`main` / `develop` への push と PR で動く。できたアプリ（`ShiftIt.zip`）とビルドログは、実行結果の Artifacts からダウンロードできる。
+  - 設定は `.github/workflows/build.yml`。`main` / `develop` への push と PR で動く。できたアプリ（`ShiftItNeo.zip`）とビルドログは、実行結果の Artifacts からダウンロードできる。
   - 結果の確認：`gh run list --branch develop`、`gh run view <ID> --log-failed`
 - Xcode プロジェクトの生成は Xcode がなくてもできる（`project.yml` を直したら、生成して中身を確かめられる）：
 
@@ -72,7 +73,7 @@
 
   ```sh
   DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
-    xcodebuild -project ShiftIt.xcodeproj -scheme ShiftIt -configuration Release build
+    xcodebuild -project ShiftItNeo.xcodeproj -scheme ShiftItNeo -configuration Release build
   ```
 
 - ウィンドウを動かすには「アクセシビリティ」の許可が要るので、動作確認は CI ではできない。CI でできたアプリを実機に入れて確かめる。

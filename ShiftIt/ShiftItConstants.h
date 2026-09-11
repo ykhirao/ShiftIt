@@ -1,1 +1,0 @@
-NSString *const kShiftItAppBundleId = @"org.shiftitapp.ShiftIt";

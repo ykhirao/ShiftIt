@@ -31,8 +31,8 @@ jobs:
           set -o pipefail
           mkdir -p build
           xcodebuild \
-            -project ShiftIt.xcodeproj \
-            -scheme ShiftIt \
+            -project ShiftItNeo.xcodeproj \
+            -scheme ShiftItNeo \
             -configuration Release \
             -destination 'generic/platform=macOS' \
             -derivedDataPath build/DerivedData \
@@ -45,7 +45,7 @@ jobs:
           SIGNING_CERT_P12: ${{ secrets.SIGNING_CERT_P12 }}
           SIGNING_CERT_PASSWORD: ${{ secrets.SIGNING_CERT_PASSWORD }}
         run: |
-          app=build/DerivedData/Build/Products/Release/ShiftIt.app
+          app=build/DerivedData/Build/Products/Release/ShiftItNeo.app
           if [ -z "$SIGNING_CERT_P12" ]; then
             echo "SIGNING_CERT_P12 が未登録なので、仮の署名（ad-hoc）のままにする"
             exit 0
@@ -69,15 +69,15 @@ jobs:
 
       - name: アプリを zip にまとめる
         run: |
-          app=build/DerivedData/Build/Products/Release/ShiftIt.app
-          lipo -info "$app/Contents/MacOS/ShiftIt"
+          app=build/DerivedData/Build/Products/Release/ShiftItNeo.app
+          lipo -info "$app/Contents/MacOS/ShiftItNeo"
           codesign -dv "$app" 2>&1 | grep -E "Authority|Signature"
-          ditto -c -k --keepParent "$app" build/ShiftIt.zip
+          ditto -c -k --keepParent "$app" build/ShiftItNeo.zip
 
       - uses: actions/upload-artifact@v7
         with:
-          name: ShiftIt
-          path: build/ShiftIt.zip
+          name: ShiftItNeo
+          path: build/ShiftItNeo.zip
 
       - uses: actions/upload-artifact@v7
         if: always()

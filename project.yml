@@ -1,9 +1,9 @@
-# Xcode プロジェクトの定義。ShiftIt.xcodeproj はここから XcodeGen で生成する（リポジトリには入れない）。
+# Xcode プロジェクトの定義。ShiftItNeo.xcodeproj はここから XcodeGen で生成する（リポジトリには入れない）。
 #   brew install xcodegen && xcodegen generate
-name: ShiftIt
+name: ShiftItNeo
 
 options:
-  bundleIdPrefix: org.shiftitapp
+  bundleIdPrefix: io.github.ykhirao
   deploymentTarget:
     macOS: "13.0"
   developmentLanguage: en
@@ -27,7 +27,7 @@ settings:
       GCC_PREPROCESSOR_DEFINITIONS: ["NDEBUG=1", "$(inherited)"]
 
 targets:
-  ShiftIt:
+  ShiftItNeo:
     type: application
     platform: macOS
     scheme: {}
@@ -46,8 +46,8 @@ targets:
       - package: ShortcutRecorder
     settings:
       base:
-        PRODUCT_NAME: ShiftIt
-        PRODUCT_BUNDLE_IDENTIFIER: org.shiftitapp.ShiftIt
+        PRODUCT_NAME: ShiftItNeo
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.ykhirao.ShiftItNeo
         INFOPLIST_FILE: ShiftIt/ShiftIt-Info.plist
         GCC_PREFIX_HEADER: ShiftIt/ShiftIt_Prefix.pch
         GCC_PRECOMPILE_PREFIX_HEADER: YES

@@ -44,8 +44,8 @@
 /* Class = "NSTextFieldCell"; title = "Center"; ObjectID = "561"; */
 "561.title" = "センタリング";
 
-/* Class = "NSTextFieldCell"; title = "ShiftIt App"; ObjectID = "583"; */
-"583.title" = "ShiftIt App";
+/* Class = "NSTextFieldCell"; title = "ShiftItNeo"; ObjectID = "583"; */
+"583.title" = "ShiftItNeo";
 
 /* Class = "NSTextFieldCell"; title = "version"; ObjectID = "585"; */
 "585.title" = "version";
@@ -80,8 +80,8 @@
 /* Class = "NSTextFieldCell"; title = "height"; ObjectID = "808"; */
 "808.title" = "高さ";
 
-/* Class = "NSButtonCell"; title = "Quit ShiftIt"; ObjectID = "814"; */
-"814.title" = "ShiftItの終了";
+/* Class = "NSButtonCell"; title = "Quit ShiftItNeo"; ObjectID = "814"; */
+"814.title" = "ShiftItNeo を終了";
 
 /* Class = "NSButtonCell"; title = "Include Window Drawers"; ObjectID = "820"; */
 "820.title" = "ドロワーを含める";

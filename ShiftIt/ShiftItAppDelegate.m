@@ -53,7 +53,7 @@ NSString *const kAXDriverDelayBetweenOperationsPrefKey = @"axdriver_delayBetween
 NSString *const kAccessibilitySettingsURL = @"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility";
 
 // notifications
-NSString *const kShowPreferencesRequestNotification = @"org.shiftitapp.shiftit.notifiactions.showPreferences";
+NSString *const kShowPreferencesRequestNotification = @"io.github.ykhirao.ShiftItNeo.notifications.showPreferences";
 
 // icon
 NSString *const kSIIconName = @"ShiftItMenuIcon";
@@ -191,8 +191,8 @@ NSDictionary *allShiftActions = nil;
 
     if (!FMTIsLoginItemEnabled()) {
         NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-        [alert setMessageText:NSLocalizedString(@"Start ShiftIt automatically?", nil)];
-        [alert setInformativeText:NSLocalizedString(@"Would you like to have ShiftIt automatically started at a login time?", nil)];
+        [alert setMessageText:NSLocalizedString(@"Start ShiftItNeo automatically?", nil)];
+        [alert setInformativeText:NSLocalizedString(@"Would you like to have ShiftItNeo automatically started at a login time?", nil)];
         [alert addButtonWithTitle:NSLocalizedString(@"Yes", nil)];
         [alert addButtonWithTitle:NSLocalizedString(@"No", nil)];
 

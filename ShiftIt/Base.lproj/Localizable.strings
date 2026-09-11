@@ -27,9 +27,9 @@
 "Recheck" = "Recheck";
 "Open System Settings" = "Open System Settings";
 "Quit" = "Quit";
-"AUTHORIZATION_INFORMATIVE_TEXT" = "ShiftIt needs to be allowed to use Accessibility in order to move and resize application windows.\n\nTurn on ShiftIt in System Settings > Privacy & Security > Accessibility. If ShiftIt is not in the list, add it with the + button.\n\nAfter updating ShiftIt, you might need to turn it off and on again.";
+"AUTHORIZATION_INFORMATIVE_TEXT" = "ShiftItNeo needs to be allowed to use Accessibility in order to move and resize application windows.\n\nTurn on ShiftItNeo in System Settings > Privacy & Security > Accessibility. If ShiftItNeo is not in the list, add it with the + button.\n\nAfter updating ShiftItNeo, you might need to turn it off and on again.";
 
-"Start ShiftIt automatically?" = "Start ShiftIt automatically?";
-"Would you like to have ShiftIt automatically started at a login time?" = "Would you like to have ShiftIt automatically started at a login time?";
+"Start ShiftItNeo automatically?" = "Start ShiftItNeo automatically?";
+"Would you like to have ShiftItNeo automatically started at a login time?" = "Would you like to have ShiftItNeo automatically started at a login time?";
 "Yes" = "Yes";
 "No" = "No";
