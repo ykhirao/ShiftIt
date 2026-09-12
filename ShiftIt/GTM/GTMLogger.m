@@ -15,6 +15,9 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 //
+//  Modified in 2026 for ShiftItNeo: removed the import of GTMGarbageCollection.h
+//  (garbage collection is no longer supported by macOS).
+//
 
 #import "GTMLogger.h"
 #import <fcntl.h>

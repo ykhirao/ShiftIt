@@ -42,6 +42,11 @@ targets:
       - path: ShiftIt/GTM/GTMLogger.m
         group: ShiftIt/GTM
         compilerFlags: ["-fno-objc-arc"]
+      # GPL v3 と同梱コードのライセンス表記をアプリにも入れる
+      - path: LICENSE
+        buildPhase: resources
+      - path: THIRD_PARTY_NOTICES.md
+        buildPhase: resources
     dependencies:
       - sdk: Carbon.framework
       - sdk: Cocoa.framework
