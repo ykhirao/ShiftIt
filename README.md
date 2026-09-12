@@ -71,4 +71,4 @@ ShiftItNeo をもう一度起動すると、設定画面が開きます。
 
 ## ライセンス
 
-[GNU General Public License v3](http://www.gnu.org/licenses/gpl.html)。本家は Filip Krikava による [ShiftIt](https://github.com/fikovnik/ShiftIt) で、さらにその元は Aravindkumar Rajendiran による [ShiftIt](http://code.google.com/p/shiftit/) です。
+[GNU General Public License v3](LICENSE)。ShiftItNeo は、本家の ShiftIt を 2026 年に改変したものです。同梱しているコードのライセンスは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)、詳しい整理は [docs/licenses.md](docs/licenses.md) にあります。本家は Filip Krikava による [ShiftIt](https://github.com/fikovnik/ShiftIt) で、さらにその元は Aravindkumar Rajendiran による [ShiftIt](http://code.google.com/p/shiftit/) です。

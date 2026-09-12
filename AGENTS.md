@@ -55,7 +55,7 @@
 
 - Objective-C（ARC）。新しく書くコードは今の書き方（プロパティ、nullability 注釈、モダンな構文）で書く。CoreFoundation の型と行き来するときは `__bridge` / `CFBridgingRelease` で所有権をはっきりさせる。
 - クラス名の接頭辞は `SI`（ShiftIt 本体）と `FMT`（ユーティリティ）。
-- 新しいファイルには GPLv3 のライセンス表記を付ける（フォーク元のライセンスを引き継ぐため）。
+- 新しいファイルには GPLv3 のライセンス表記を付ける（フォーク元のライセンスを引き継ぐため）。外から持ち込んだコード（MIT、Apache 2.0 など）を改変したら、ファイルの先頭に改変した旨を書き、`THIRD_PARTY_NOTICES.md` も更新する。
 - 画面の文言を変えたら、`Base.lproj` と `ja.lproj` の両方を直す。
 
 ## ビルドと動作確認
@@ -85,6 +85,8 @@
 - 証明書の秘密鍵は GitHub Secrets にしか置いていない（取り出せない）。作り直すと、利用者は一度だけ許可を付け直すことになる。
 
 ## 作業リスト
+
+これからの課題は [docs/roadmap.md](docs/roadmap.md) にまとめている。ライセンス（GPL v3 と同梱コード、App Store に出せない理由）は [docs/licenses.md](docs/licenses.md)。
 
 2026-09-12 時点。作業が進んだら更新してください。
 
